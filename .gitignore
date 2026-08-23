@@ -1,0 +1,17 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+dist-ssr
+dev-dist
+
+# Env — never commit real secrets (example file IS committed)
+.env
+.env.*
+!.env.example
+
+# Logs / misc
+*.log
+*.local
+.DS_Store
