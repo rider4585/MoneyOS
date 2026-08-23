@@ -7,7 +7,8 @@ import { animate, useMotionValue, useTransform } from 'framer-motion'
  */
 export default function CountUp({ value = 0, duration = 1.1, format = (n) => String(n), className = '' }) {
   const count = useMotionValue(0)
-  const text = useTransform(count, (latest) => format(Math.round(latest)))
+  const whole = Number.isInteger(value)
+  const text = useTransform(count, (latest) => format(whole ? Math.round(latest) : latest))
 
   useEffect(() => {
     const controls = animate(count, value, { duration, ease: 'easeOut' })
