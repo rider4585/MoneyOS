@@ -1,4 +1,4 @@
-# MoneyOS — Build Timeline
+﻿# MoneyOS â€” Build Timeline
 
 Tracks total build time, start to finish.
 
@@ -11,6 +11,6 @@ Tracks total build time, start to finish.
 | Phase | Description                          | Started | Ended | Duration |
 |-------|--------------------------------------|---------|-------|----------|
 | T1    | Scaffold (Vite+React+Tailwind+PWA)   | 2026-08-24 02:51:45 +05:30 (2026-08-23T21:21:45Z) | 2026-08-24 03:11:37 +05:30 (2026-08-23T21:41:37Z) | ~20 min |
-| T2    | Data layer + Supabase + Google auth  | pending | pending | — |
-| T3    | Features (expenses/borrow/lent/EMI/budgets/recurring/dashboard) | pending | pending | — |
-| T4    | Polish, QA, release                  | pending | pending | — |
+| T2    | Data layer + Supabase + Google auth  | pending | pending | â€” |
+| T3    | Features (expenses/borrow/lent/EMI/budgets/recurring/dashboard) | pending | pending | â€” |
+| T4    | Polish, QA, release                  | pending | pending | â€” |
