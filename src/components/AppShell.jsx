@@ -4,6 +4,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { X } from 'lucide-react'
 import BottomNavDock from './BottomNavDock.jsx'
 import AddTransactionFab from './AddTransactionFab.jsx'
+import DemoBanner from './DemoBanner.jsx'
 
 /**
  * AppShell — router outlet with staggered page transitions,
@@ -31,8 +32,9 @@ export default function AppShell() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.22, ease: 'easeOut' }}
-        className="mx-auto w-full max-w-xl px-5 pt-10 pb-40"
+        className="mx-auto w-full max-w-xl px-5 pt-6 pb-40"
       >
+        <DemoBanner />
         <Outlet />
       </motion.main>
 
