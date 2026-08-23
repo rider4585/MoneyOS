@@ -10,7 +10,7 @@ Tracks total build time, start to finish.
 ## Phase log
 | Phase | Description                          | Started | Ended | Duration |
 |-------|--------------------------------------|---------|-------|----------|
-| T1    | Scaffold (Vite+React+Tailwind+PWA)   | pending | pending | — |
+| T1    | Scaffold (Vite+React+Tailwind+PWA)   | 2026-08-24 02:51:45 +05:30 (2026-08-23T21:21:45Z) | pending | — |
 | T2    | Data layer + Supabase + Google auth  | pending | pending | — |
 | T3    | Features (expenses/borrow/lent/EMI/budgets/recurring/dashboard) | pending | pending | — |
 | T4    | Polish, QA, release                  | pending | pending | — |
