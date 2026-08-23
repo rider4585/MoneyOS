@@ -68,6 +68,10 @@ eq((await repo.listTransactions()).length, txns.length + 1, 'addTransaction pers
 const updated = await repo.updateTransaction(added.id, { amount_minor: 30000 })
 eq(updated.inr_amount_minor, 30000, 'updateTransaction recomputes inr snapshot')
 
+const eurUpdated = await repo.updateTransaction(added.id, { currency: 'EUR', amount_minor: 2000 })
+eq(eurUpdated.fx_rate_to_inr, Math.round((83.47 / 0.92) * 1e8) / 1e8, 'currency switch fetches fx for new currency')
+eq(eurUpdated.inr_amount_minor, Math.round(2000 * (83.47 / 0.92)), 'inr snapshot recomputed on currency switch')
+
 await repo.deleteTransaction(added.id)
 eq((await repo.listTransactions()).length, txns.length, 'deleteTransaction removes row')
 
@@ -95,20 +99,41 @@ eq(afterSettle.settled_inr_minor, Math.min(beforeSettle + 100000, afterSettle.pr
 const clamped = await repo.settleLedgerEntry(led.id, 10_000_000)
 eq(clamped.settled_inr_minor, clamped.principal_inr_minor, 'over-settlement clamps at principal_inr_minor')
 
+// ---- newly added ledger entry uses principal_* shape (contract parity) ------
+const newLed = await repo.addLedgerEntry({
+  type: 'borrow',
+  counterparty: 'Smoke Sibling',
+  principal_minor: 500000,
+})
+assert(newLed.principal_inr_minor === 500000 && newLed.amount_minor === undefined, 'addLedgerEntry returns principal_* shape')
+const settledNew = await repo.settleLedgerEntry(newLed.id, 125000)
+eq(settledNew.settled_inr_minor, 125000, 'settle works on a freshly added entry')
+
+// ---- newly added EMI uses principal_* shape ---------------------------------
+const newEmi = await repo.addEmi({
+  name: 'smoke-test loan',
+  principal_minor: 10000000,
+  emi_amount_minor: 212400,
+  tenure_months: 60,
+})
+assert(newEmi.principal_inr_minor === 10000000 && newEmi.emi_inr_amount_minor === 212400 && newEmi.amount_minor === undefined, 'addEmi returns principal_* + emi_inr shape')
+
 // ---- EMI installment --------------------------------------------------------
 const emi = emis[0]
-const instCountBefore = (await repo.listEmis(), undefined) // keep flow simple
 const prevDue = emi.next_due_date
 const inst = await repo.recordInstallment(emi.id, {})
 eq(inst.paid_inr_minor, Math.round(inst.paid_minor * inst.fx_rate_to_inr), 'installment derives paid_inr from snapshot')
 const refreshed = (await repo.listEmis()).find((e) => e.id === emi.id)
 assert(refreshed.next_due_date > prevDue, `next_due_date advanced (${prevDue} -> ${refreshed.next_due_date})`)
 
-// ---- budgets upsert ----------------------------------------------------------
+// ---- budgets upsert (month accepted as 'YYYY-MM' OR 'YYYY-MM-01') ----------
 const catId = budgets[0].category_id
 const bumped = await repo.setBudget({ category_id: catId, limit_inr_minor: budgets[0].limit_inr_minor + 500000 })
 eq(bumped.limit_inr_minor, budgets[0].limit_inr_minor + 500000, 'setBudget updates existing (same category+month)')
 eq((await repo.listBudgets()).length, 4, 'budget count unchanged after upsert')
+const altFormat = await repo.setBudget({ category_id: catId, month: new Date().toISOString().slice(0, 7), limit_inr_minor: 2000000 })
+eq(altFormat.month, `${new Date().toISOString().slice(0, 7)}-01`, "setBudget normalises 'YYYY-MM' input to first-of-month")
+eq((await repo.listBudgets(new Date().toISOString().slice(0, 7))).length, 4, "listBudgets('YYYY-MM') matches 'YYYY-MM-01' rows")
 
 // ---- recurring -----------------------------------------------------------------
 const rule = await repo.addRecurring({

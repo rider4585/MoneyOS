@@ -74,16 +74,28 @@ export function createSupabaseRepository() {
     },
 
     async updateTransaction(id, patch) {
-      const updates = { ...patch }
+      const { data: row, error: fetchErr } = await client()
+        .from('transactions')
+        .select('*')
+        .eq('id', id)
+        .single()
+      if (fetchErr) throw fetchErr
+
+      const updates = { ...row, ...patch }
       if ('amount_minor' in patch || 'currency' in patch || 'fx_rate_to_inr' in patch) {
-        const cur = updates.currency ?? patch.currency
+        const explicit = Number(patch.fx_rate_to_inr)
         const rate =
-          cur === INR ? 1 : Number.isFinite(Number(updates.fx_rate_to_inr)) ? Number(updates.fx_rate_to_inr) : undefined
-        if (rate !== undefined && 'amount_minor' in updates) {
-          Object.assign(updates, snapshotAmount(updates.amount_minor, cur ?? INR, rate))
-          delete updates.fx_rate_to_inr // recomputed deterministically
-        }
+          updates.currency === INR
+            ? 1
+            : Number.isFinite(explicit) && explicit > 0
+              ? explicit
+              : await fetchFxRateToInr(updates.currency)
+        Object.assign(updates, snapshotAmount(updates.amount_minor, updates.currency ?? INR, rate))
       }
+      delete updates.id
+      delete updates.created_at
+      delete updates.updated_at
+
       const { data, error } = await client().from('transactions').update(updates).eq('id', id).select().single()
       if (error) throw error
       return data
@@ -115,8 +127,9 @@ export function createSupabaseRepository() {
         user_id: uid,
         type: entry.type,
         counterparty: entry.counterparty,
-        ...money,
         principal_minor: money.amount_minor,
+        currency: money.currency,
+        fx_rate_to_inr: money.fx_rate_to_inr,
         principal_inr_minor: money.inr_amount_minor,
         settled_inr_minor: Math.min(entry.settled_inr_minor ?? 0, money.inr_amount_minor),
         entry_date: entry.entry_date ?? new Date().toISOString().slice(0, 10),
@@ -237,7 +250,7 @@ export function createSupabaseRepository() {
     // --------------------------------------------------------------- budgets
     async listBudgets(month) {
       const uid = await currentUserId()
-      const m = month ?? new Date().toISOString().slice(0, 7)
+      const m = `${(month ?? new Date().toISOString().slice(0, 7)).slice(0, 7)}-01`
       const { data, error } = await client()
         .from('budgets')
         .select('*')
@@ -252,11 +265,11 @@ export function createSupabaseRepository() {
     async setBudget(budget) {
       const uid = await currentUserId()
       if (!(budget.limit_inr_minor > 0)) throw new Error('setBudget: limit must be positive (INR minor)')
-      const month = budget.month ?? new Date().toISOString().slice(0, 7)
+      const month = `${(budget.month ?? new Date().toISOString().slice(0, 7)).slice(0, 7)}-01`
       const payload = {
         user_id: uid,
         category_id: budget.category_id,
-        month: `${month}-01`,
+        month,
         limit_inr_minor: Math.round(budget.limit_inr_minor),
         alert_threshold_pct: budget.alert_threshold_pct ?? 80,
       }

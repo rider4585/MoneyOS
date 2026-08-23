@@ -144,7 +144,10 @@ export function createDemoRepository() {
         id: uid('led'),
         type: entry.type,
         counterparty: entry.counterparty,
-        ...money,
+        principal_minor: money.amount_minor,
+        currency: money.currency,
+        fx_rate_to_inr: money.fx_rate_to_inr,
+        principal_inr_minor: money.inr_amount_minor,
         settled_inr_minor: entry.settled_inr_minor ?? 0,
         entry_date: entry.entry_date ?? new Date().toISOString().slice(0, 10),
         due_date: entry.due_date ?? null,
@@ -175,18 +178,18 @@ export function createDemoRepository() {
     async addEmi(emi) {
       const data = load()
       const money = await snap(emi.principal_minor, emi.currency)
-      const emiMoney = emi.emi_inr_amount_minor
-        ? { amount_minor: Math.round(emi.emi_inr_amount_minor / (emi.fx_rate_to_inr ?? 1)), currency: emi.currency ?? INR, fx_rate_to_inr: emi.fx_rate_to_inr ?? 1, inr_amount_minor: Math.round(emi.emi_inr_amount_minor) }
-        : await snap(emi.emi_amount_minor, emi.currency)
+      const emiMoney = await snap(emi.emi_amount_minor, emi.currency)
       const row = {
         id: uid('emi'),
         name: emi.name,
         lender: emi.lender ?? null,
-        ...money,
+        principal_minor: money.amount_minor,
+        currency: money.currency,
+        fx_rate_to_inr: money.fx_rate_to_inr,
+        principal_inr_minor: money.inr_amount_minor,
         interest_rate_pa: emi.interest_rate_pa ?? null,
         tenure_months: emi.tenure_months,
         emi_amount_minor: emiMoney.amount_minor,
-        fx_rate_to_inr: money.fx_rate_to_inr,
         emi_inr_amount_minor: emiMoney.inr_amount_minor,
         start_date: emi.start_date ?? new Date().toISOString().slice(0, 10),
         next_due_date: emi.next_due_date ?? emi.start_date ?? new Date().toISOString().slice(0, 10),
@@ -226,7 +229,7 @@ export function createDemoRepository() {
 
     // --------------------------------------------------------------- budgets
     async listBudgets(month) {
-      const target = month ?? monthStart()
+      const target = `${(month ?? monthStart()).slice(0, 7)}-01`
       return load()
         .budgets.filter((b) => b.month === target)
         .map((b) => ({ ...b }))
@@ -234,7 +237,7 @@ export function createDemoRepository() {
 
     async setBudget(budget) {
       const data = load()
-      const m = budget.month ?? monthStart()
+      const m = `${(budget.month ?? monthStart()).slice(0, 7)}-01`
       const existing = data.budgets.find(
         (b) => b.category_id === budget.category_id && b.month === m
       )
