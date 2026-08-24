@@ -42,7 +42,13 @@ const notImplemented = (method) => async () => {
  * // recurring_transactions (rules -> auto-generated entries)
  * @property {() => Promise<Array>}                      listRecurring
  * @property {(rule: object) => Promise<object>}         addRecurring
+ * @property {(id: string, patch: object) => Promise<object>} updateRecurring
  * @property {(id: string) => Promise<void>}             deleteRecurring
+ * // categories (user-scoped metadata; defaults provisioned per user)
+ * @property {() => Promise<Array>}                      listCategories
+ * @property {(category: object) => Promise<object>}     addCategory
+ * @property {(id: string, patch: object) => Promise<object>} updateCategory
+ * @property {(id: string) => Promise<void>}             deleteCategory
  * // profile / session-adjacent metadata
  * @property {() => Promise<object|null>}                getProfile
  */
@@ -60,9 +66,15 @@ export const repository = {
   recordInstallment: notImplemented('recordInstallment'),
   listBudgets: notImplemented('listBudgets'),
   setBudget: notImplemented('setBudget'),
+  deleteBudget: notImplemented('deleteBudget'),
   listRecurring: notImplemented('listRecurring'),
   addRecurring: notImplemented('addRecurring'),
+  updateRecurring: notImplemented('updateRecurring'),
   deleteRecurring: notImplemented('deleteRecurring'),
+  listCategories: notImplemented('listCategories'),
+  addCategory: notImplemented('addCategory'),
+  updateCategory: notImplemented('updateCategory'),
+  deleteCategory: notImplemented('deleteCategory'),
   getProfile: notImplemented('getProfile'),
 }
 

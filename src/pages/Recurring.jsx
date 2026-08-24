@@ -17,7 +17,7 @@ import {
 import PageHeader from '../features/plan/PageHeader.jsx'
 import { countdownLabel, daysUntil } from '../features/plan/dates.js'
 import { FREQUENCIES, frequencyLabel, postRuleNow, setRuleActive, updateRule } from '../features/plan/recurringOps.js'
-import { usePlanCategories } from '../features/plan/categories.js'
+import { useCategories } from '../features/categories.js'
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } }
 const rise = {
@@ -59,7 +59,7 @@ export default function Recurring() {
   const [saving, setSaving] = useState(false)
   const [busyId, setBusyId] = useState(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
-  const { byId } = usePlanCategories()
+  const { byId } = useCategories()
 
   const reload = useCallback(async () => {
     setRules(await repository.listRecurring())

@@ -17,7 +17,7 @@ import { Amount, EmptyState, GlassCard, ProgressBar, SkeletonLoader, StatTile } 
 import PageHeader from '../features/plan/PageHeader.jsx'
 import SpendChart from '../features/plan/SpendChart.jsx'
 import { addMonthsIso, countdownLabel, daysUntil, monthLabel } from '../features/plan/dates.js'
-import { usePlanCategories } from '../features/plan/categories.js'
+import { useCategories } from '../features/categories.js'
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } }
 const rise = {
@@ -36,7 +36,7 @@ export default function Dashboard() {
   const [recentTxns, setRecentTxns] = useState([])
   const [budgets, setBudgets] = useState([])
   const [emis, setEmis] = useState([])
-  const { byId } = usePlanCategories()
+  const { byId } = useCategories()
 
   const month = monthStart()
 

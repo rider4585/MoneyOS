@@ -12,7 +12,7 @@ import {
   ThemeToggle,
 } from '../components/ui/index.js'
 import PageHeader from '../features/plan/PageHeader.jsx'
-import { addCategory, deleteCategory, renameCategory, usePlanCategories } from '../features/plan/categories.js'
+import { addCategory, deleteCategory, updateCategory, useCategories } from '../features/categories.js'
 import { useAuth } from '../context/AuthProvider.jsx'
 import { useTheme } from '../theme/ThemeProvider.jsx'
 
@@ -40,7 +40,7 @@ function SectionCard({ title, action, children, className = '' }) {
 export default function Settings() {
   const { user } = useAuth()
   const { theme } = useTheme()
-  const { categories } = usePlanCategories()
+  const { categories } = useCategories()
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
@@ -81,9 +81,9 @@ export default function Settings() {
     if (!form.name.trim()) return setFormError('Name is required.')
     try {
       if (editingId) {
-        renameCategory(editingId, form.name.trim())
+        await updateCategory(editingId, { name: form.name.trim() })
       } else {
-        addCategory({ name: form.name.trim(), kind: form.kind, color: form.color })
+        await addCategory({ name: form.name.trim(), kind: form.kind, color: form.color })
       }
       setSheetOpen(false)
     } catch (error) {
@@ -91,12 +91,16 @@ export default function Settings() {
     }
   }
 
-  const removeCategory = (category) => {
+  const removeCategory = async (category) => {
     if (confirmDeleteId !== category.id) {
       setConfirmDeleteId(category.id)
       return
     }
-    deleteCategory(category.id)
+    try {
+      await deleteCategory(category.id)
+    } catch (error) {
+      console.error('[settings] category delete failed', error)
+    }
     setConfirmDeleteId(null)
   }
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AlertTriangle, ChartPie, ChevronLeft, ChevronRight, Pencil, Plus } from 'lucide-react'
+import { AlertTriangle, ChartPie, ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react'
 import repository from '../data/index.js'
 import { formatInr, monthStart } from '../lib/money.js'
 import {
@@ -15,7 +15,7 @@ import {
 } from '../components/ui/index.js'
 import PageHeader from '../features/plan/PageHeader.jsx'
 import { addMonthsIso, monthLabel } from '../features/plan/dates.js'
-import { usePlanCategories } from '../features/plan/categories.js'
+import { useCategories } from '../features/categories.js'
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } }
 const rise = {
@@ -35,7 +35,8 @@ export default function Budgets() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [formError, setFormError] = useState(null)
   const [saving, setSaving] = useState(false)
-  const { categories, byId } = usePlanCategories()
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const { categories, byId } = useCategories()
 
   const reload = useCallback(async (targetMonth) => {
     const [rows, txns] = await Promise.all([
@@ -56,6 +57,12 @@ export default function Budgets() {
       alive = false
     }
   }, [month, reload])
+
+  useEffect(() => {
+    if (!confirmDeleteId) return undefined
+    const timer = setTimeout(() => setConfirmDeleteId(null), 3000)
+    return () => clearTimeout(timer)
+  }, [confirmDeleteId])
 
   const spentByCategory = useMemo(() => {
     const map = new Map()
@@ -199,7 +206,21 @@ export default function Budgets() {
                 const pct = row.limit_inr_minor ? Math.round((row.spent / row.limit_inr_minor) * 100) : 0
                 const over = row.spent > row.limit_inr_minor
                 const near = !over && row.alert_threshold_pct && pct >= row.alert_threshold_pct
-                return (
+  const removeBudget = async (row) => {
+    if (confirmDeleteId !== row.id) {
+      setConfirmDeleteId(row.id)
+      return
+    }
+    try {
+      await repository.deleteBudget(row.id)
+      await reload(month)
+    } catch (error) {
+      console.error('[budgets] delete failed', error)
+    }
+    setConfirmDeleteId(null)
+  }
+
+  return (
                   <li key={row.id} className="neu-card rounded-3xl bg-surface p-5">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -212,14 +233,27 @@ export default function Budgets() {
                           <span className="text-xs font-medium text-faint">of {formatInr(row.limit_inr_minor)}</span>
                         </p>
                       </div>
-                      <button
-                        type="button"
-                        aria-label={`Edit ${row.name} budget`}
-                        onClick={() => openEdit(row)}
-                        className="neu-raised-sm grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-surface text-muted hover:text-brand"
-                      >
-                        <Pencil size={14} />
-                      </button>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <button
+                          type="button"
+                          aria-label={`Edit ${row.name} budget`}
+                          onClick={() => openEdit(row)}
+                          className="neu-raised-sm grid h-8 w-8 place-items-center rounded-lg bg-surface text-muted hover:text-brand"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <Pressable
+                          type="button"
+                          aria-label={confirmDeleteId === row.id ? `Confirm delete ${row.name} budget` : `Delete ${row.name} budget`}
+                          onClick={() => removeBudget(row)}
+                          className={`neu-raised-sm inline-flex h-8 items-center gap-1 rounded-lg px-2 text-xs font-bold ${
+                            confirmDeleteId === row.id ? 'bg-expense text-white' : 'bg-surface text-muted hover:text-expense'
+                          }`}
+                        >
+                          <Trash2 size={13} />
+                          {confirmDeleteId === row.id ? 'Sure?' : ''}
+                        </Pressable>
+                      </div>
                     </div>
                     <ProgressBar value={row.spent} max={row.limit_inr_minor} size="sm" showPercent overLabel={`${Math.max(pct - 100, 1)}% over`} className="mt-3" />
                     {near ? (

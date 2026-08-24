@@ -12,7 +12,7 @@ import {
 } from '../components/ui/index.js'
 import { useAddTransaction } from '../features/money/AddTransactionProvider.jsx'
 import TxnRow from '../features/money/TxnRow.jsx'
-import { categoriesFor, MONEY_CATEGORIES } from '../features/money/categories.js'
+import { useCategories } from '../features/categories.js'
 
 /**
  * Expenses — every transaction: search, type + category filters, month
@@ -52,6 +52,8 @@ export default function Expenses() {
   const [typeFilter, setTypeFilter] = useState('all')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [sort, setSort] = useState('date-desc')
+  const { categories } = useCategories()
+  const byId = useMemo(() => Object.fromEntries(categories.map((c) => [c.id, c])), [categories])
 
   const refresh = useCallback(async () => {
     try {
@@ -83,9 +85,7 @@ export default function Expenses() {
       rows = rows.filter(
         (t) =>
           (t.description ?? '').toLowerCase().includes(needle) ||
-          (MONEY_CATEGORIES.find((c) => c.id === t.category_id)?.name ?? '')
-            .toLowerCase()
-            .includes(needle)
+          (byId[t.category_id]?.name ?? '').toLowerCase().includes(needle)
       )
     }
     const cmp = {
@@ -95,7 +95,7 @@ export default function Expenses() {
       'amount-asc': (a, b) => a.inr_amount_minor - b.inr_amount_minor,
     }[sort]
     return [...rows].sort(cmp)
-  }, [txns, typeFilter, categoryFilter, q, sort])
+  }, [txns, typeFilter, categoryFilter, q, sort, byId])
 
   // Month groups preserve the globally-sorted row order inside each group.
   const groups = useMemo(() => {
@@ -113,8 +113,8 @@ export default function Expenses() {
 
   const chipKind = typeFilter === 'income' ? 'income' : 'expense'
   const chips = useMemo(
-    () => [{ id: 'all', name: 'All', color: null }, ...categoriesFor(chipKind)],
-    [chipKind]
+    () => [{ id: 'all', name: 'All', color: null }, ...categories.filter((c) => c.kind === chipKind)],
+    [categories, chipKind]
   )
   const hasActiveFilters = typeFilter !== 'all' || categoryFilter !== 'all' || q.trim() !== ''
 

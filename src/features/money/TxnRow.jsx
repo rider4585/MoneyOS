@@ -1,6 +1,6 @@
 import { Amount, Pressable } from '../../components/ui/index.js'
 import { INR } from '../../lib/money.js'
-import { categoryById, FALLBACK_CATEGORY } from './categories.js'
+import { FALLBACK_CATEGORY, useCategories } from '../categories.js'
 
 function shortDate(iso) {
   const d = new Date(`${iso}T00:00:00`)
@@ -13,7 +13,8 @@ function shortDate(iso) {
  * Tap opens the edit sheet (wired by the parent).
  */
 export default function TxnRow({ txn, onClick }) {
-  const cat = categoryById(txn.category_id) ?? FALLBACK_CATEGORY
+  const { byId } = useCategories()
+  const cat = byId[txn.category_id] ?? FALLBACK_CATEGORY
   const isIncome = txn.type === 'income'
   const signedInrMinor = isIncome ? txn.inr_amount_minor : -txn.inr_amount_minor
 

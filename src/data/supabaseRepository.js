@@ -282,6 +282,11 @@ export function createSupabaseRepository() {
       return data
     },
 
+    async deleteBudget(id) {
+      const { error } = await client().from('budgets').delete().eq('id', id)
+      if (error) throw error
+    },
+
     // ------------------------------------------------------------- recurring
     async listRecurring() {
       const uid = await currentUserId()
@@ -316,8 +321,96 @@ export function createSupabaseRepository() {
       return data
     },
 
+    async updateRecurring(id, patch) {
+      const uid = await currentUserId()
+      const { data: row, error: fetchErr } = await client()
+        .from('recurring_transactions')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', uid)
+        .single()
+      if (fetchErr) throw fetchErr
+
+      const updates = { ...row, ...patch }
+      if ('amount_minor' in patch || 'currency' in patch || 'fx_rate_to_inr' in patch) {
+        const explicit = Number(patch.fx_rate_to_inr)
+        const rate =
+          updates.currency === INR
+            ? 1
+            : Number.isFinite(explicit) && explicit > 0
+              ? explicit
+              : await fetchFxRateToInr(updates.currency ?? INR)
+        Object.assign(updates, snapshotAmount(updates.amount_minor, updates.currency ?? INR, rate))
+      }
+      delete updates.id
+      delete updates.created_at
+      delete updates.updated_at
+
+      const { data, error } = await client()
+        .from('recurring_transactions')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+
     async deleteRecurring(id) {
       const { error } = await client().from('recurring_transactions').delete().eq('id', id)
+      if (error) throw error
+    },
+
+    // ------------------------------------------------------------- categories
+    async listCategories() {
+      const uid = await currentUserId()
+      const { data, error } = await client()
+        .from('categories')
+        .select('*')
+        .eq('user_id', uid)
+        .order('kind', { ascending: true })
+        .order('sort_order', { ascending: true })
+        .order('name', { ascending: true })
+      if (error) throw error
+      return data ?? []
+    },
+
+    async addCategory(category) {
+      const uid = await currentUserId()
+      const name = String(category.name ?? '').trim()
+      const kind = category.kind ?? 'expense'
+      if (!name) throw new Error('addCategory: name is required')
+      const payload = {
+        user_id: uid,
+        name,
+        kind,
+        color: category.color ?? '#8B5CF6',
+        icon: category.icon ?? 'circle',
+      }
+      if (Number.isFinite(Number(category.sort_order))) payload.sort_order = Number(category.sort_order)
+      const { data, error } = await client().from('categories').insert(payload).select().single()
+      if (error) throw error
+      return data
+    },
+
+    async updateCategory(id, patch) {
+      const updates = { ...patch }
+      if (updates.name != null) {
+        updates.name = String(updates.name).trim()
+        if (!updates.name) throw new Error('updateCategory: name is required')
+      }
+      delete updates.id
+      delete updates.user_id
+      delete updates.created_at
+      delete updates.updated_at
+      const { data, error } = await client().from('categories').update(updates).eq('id', id).select().single()
+      if (error) throw error
+      return data
+    },
+
+    async deleteCategory(id) {
+      // FKs do the rest: transactions/recurring SET NULL, budgets CASCADE.
+      const { error } = await client().from('categories').delete().eq('id', id)
       if (error) throw error
     },
 

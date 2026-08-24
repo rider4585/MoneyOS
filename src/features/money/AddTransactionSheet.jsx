@@ -12,7 +12,7 @@ import {
   NeuSelect,
   SegmentedControl,
 } from '../../components/ui/index.js'
-import { categoriesFor } from './categories.js'
+import { useCategories } from '../categories.js'
 import ConfirmSheet from './ConfirmSheet.jsx'
 
 export const ENTRY_CURRENCIES = [INR, 'USD', 'EUR', 'GBP', 'AED', 'SGD']
@@ -55,6 +55,11 @@ export default function AddTransactionSheet({ open, onClose, prefill = null, onS
   const [error, setError] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [fxRate, setFxRate] = useState(null)
+  const { categories } = useCategories()
+  const kindCats = useMemo(
+    () => categories.filter((c) => c.kind === (type === 'income' ? 'income' : 'expense')),
+    [categories, type]
+  )
 
   // (Re)initialise the form whenever the sheet opens for a new target.
   useEffect(() => {
@@ -74,20 +79,19 @@ export default function AddTransactionSheet({ open, onClose, prefill = null, onS
       setType('expense')
       setAmountText('')
       setCurrency(INR)
-      setCategoryId(categoriesFor('expense')[0]?.id ?? null)
+      setCategoryId(null)
       setDate(todayIso())
       setNote('')
       setMethod('UPI')
     }
   }, [open, prefill])
 
-  // Keep the selected category valid for the active type.
+  // Keep the selected category valid for the active type (heals after load too).
   useEffect(() => {
-    const kind = type === 'income' ? 'income' : 'expense'
-    if (!categoryId || categoriesFor(kind).every((c) => c.id !== categoryId)) {
-      setCategoryId(categoriesFor(kind)[0]?.id ?? null)
+    if (!categoryId || kindCats.every((c) => c.id !== categoryId)) {
+      setCategoryId(kindCats[0]?.id ?? null)
     }
-  }, [type]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [categoryId, kindCats]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Entry-time fx snapshot preview — fetched once per currency per session
   // (sessionStorage-cached inside fx.js); the repository re-snapshots on save.
@@ -110,7 +114,7 @@ export default function AddTransactionSheet({ open, onClose, prefill = null, onS
   }, [open, currency])
 
   const kind = type === 'income' ? 'income' : 'expense'
-  const chips = useMemo(() => categoriesFor(kind), [kind])
+  const chips = kindCats
   const inrPreview = useMemo(() => {
     const minor = rupeesToMinor(amountText)
     if (minor == null || !fxRate) return null

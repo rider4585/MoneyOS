@@ -260,6 +260,14 @@ export function createDemoRepository() {
       return row
     },
 
+    async deleteBudget(id) {
+      const data = load()
+      const before = data.budgets.length
+      data.budgets = data.budgets.filter((b) => b.id !== id)
+      if (data.budgets.length === before) throw new Error(`deleteBudget: unknown id ${id}`)
+      persist()
+    },
+
     // ------------------------------------------------------------- recurring
     async listRecurring() {
       return load().recurring_transactions.map((r) => ({ ...r }))
@@ -286,11 +294,100 @@ export function createDemoRepository() {
       return row
     },
 
+    async updateRecurring(id, patch) {
+      const data = load()
+      const row = data.recurring_transactions.find((r) => r.id === id)
+      if (!row) throw new Error(`updateRecurring: unknown id ${id}`)
+      Object.assign(row, patch)
+      if ('amount_minor' in patch || 'currency' in patch || 'fx_rate_to_inr' in patch) {
+        const explicit = Number(patch.fx_rate_to_inr)
+        const rate =
+          row.currency === INR
+            ? 1
+            : Number.isFinite(explicit) && explicit > 0
+              ? explicit
+              : await fetchFxRateToInr(row.currency)
+        Object.assign(row, snapshotAmount(row.amount_minor, row.currency ?? INR, rate))
+      }
+      persist()
+      return { ...row }
+    },
+
     async deleteRecurring(id) {
       const data = load()
       const before = data.recurring_transactions.length
       data.recurring_transactions = data.recurring_transactions.filter((r) => r.id !== id)
       if (data.recurring_transactions.length === before) throw new Error(`deleteRecurring: unknown id ${id}`)
+      persist()
+    },
+
+    // ------------------------------------------------------------- categories
+    async listCategories() {
+      return load()
+        .categories.map((c) => ({ ...c }))
+        .sort(
+          (a, b) =>
+            (a.kind ?? '').localeCompare(b.kind ?? '') ||
+            (a.sort_order ?? 0) - (b.sort_order ?? 0) ||
+            a.name.localeCompare(b.name)
+        )
+    },
+
+    async addCategory(category) {
+      const data = load()
+      const name = String(category.name ?? '').trim()
+      const kind = category.kind ?? 'expense'
+      if (!name) throw new Error('addCategory: name is required')
+      if (data.categories.some((c) => c.kind === kind && c.name.toLowerCase() === name.toLowerCase())) {
+        throw new Error(`addCategory: "${name}" already exists in ${kind}`)
+      }
+      const slug = name.toLowerCase().replace(/[^a-z]+/g, '-') || 'custom'
+      let id = `cat-${slug}`
+      let suffix = 2
+      while (data.categories.some((c) => c.id === id)) id = `cat-${slug}-${suffix++}`
+      const maxSort = data.categories.reduce((max, c) => Math.max(max, c.sort_order ?? 0), 0)
+      const row = {
+        id,
+        name,
+        kind,
+        color: category.color ?? '#8B5CF6',
+        icon: category.icon ?? 'circle',
+        sort_order: category.sort_order ?? maxSort + 10,
+      }
+      data.categories.push(row)
+      persist()
+      return { ...row }
+    },
+
+    async updateCategory(id, patch) {
+      const data = load()
+      const row = data.categories.find((c) => c.id === id)
+      if (!row) throw new Error(`updateCategory: unknown id ${id}`)
+      const nextName = patch.name != null ? String(patch.name).trim() : row.name
+      const nextKind = patch.kind ?? row.kind
+      if (!nextName) throw new Error('updateCategory: name is required')
+      if (data.categories.some((c) => c.id !== id && c.kind === nextKind && c.name.toLowerCase() === nextName.toLowerCase())) {
+        throw new Error(`updateCategory: "${nextName}" already exists in ${nextKind}`)
+      }
+      // Renames keep the id stable so transaction/budget/recurring references survive.
+      Object.assign(row, patch, { name: nextName })
+      persist()
+      return { ...row }
+    },
+
+    async deleteCategory(id) {
+      const data = load()
+      const before = data.categories.length
+      data.categories = data.categories.filter((c) => c.id !== id)
+      if (data.categories.length === before) throw new Error(`deleteCategory: unknown id ${id}`)
+      // Mirror schema FK behaviour: transactions/recurring SET NULL, budgets CASCADE.
+      for (const t of data.transactions) {
+        if (t.category_id === id) t.category_id = null
+      }
+      for (const r of data.recurring_transactions) {
+        if (r.category_id === id) r.category_id = null
+      }
+      data.budgets = data.budgets.filter((b) => b.category_id !== id)
       persist()
     },
 

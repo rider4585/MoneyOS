@@ -35,7 +35,7 @@ export default function AppShell() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
-          className="mx-auto w-full max-w-xl px-5 pt-6 pb-40"
+          className="mx-auto w-full max-w-xl px-5 pt-6 pb-40 sm:max-w-2xl md:max-w-3xl"
         >
           <DemoBanner />
           <Outlet />

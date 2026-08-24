@@ -2,11 +2,9 @@ import { isoDate } from '../../lib/money.js'
 
 /**
  * recurringOps.js — higher-level recurring-rule operations for the plan lane,
- * composed ONLY from the frozen repository contract (add/delete/list).
- *
- * The contract has no update/pause primitives, so edit / pause / resume /
- * post-due are implemented as delete + re-add with merged fields. The re-added
- * rule gets a fresh id; transactions posted afterwards link to that new id.
+ * composed from the repository contract. Since T4 the contract exposes
+ * updateRecurring(id, patch), so edit / pause / resume keep the rule's id
+ * stable (transactions posted earlier stay linked).
  */
 
 export const FREQUENCIES = [
@@ -47,57 +45,22 @@ export function frequencyLabel(rule) {
   return `Every ${n} ${plural}`
 }
 
-async function rewriteRule(repository, rule, patch) {
-  await repository.deleteRecurring(rule.id)
-  try {
-    return await repository.addRecurring({
-      title: rule.title,
-      category_id: rule.category_id ?? null,
-      type: rule.type ?? 'expense',
-      amount_minor: rule.amount_minor,
-      currency: rule.currency,
-      frequency: rule.frequency,
-      interval_count: rule.interval_count ?? 1,
-      next_run_date: rule.next_run_date,
-      end_date: rule.end_date ?? null,
-      active: rule.active ?? true,
-      ...patch,
-    })
-  } catch (error) {
-    // Re-add failed after delete — best-effort restore of the original row.
-    await repository.addRecurring({
-      title: rule.title,
-      category_id: rule.category_id ?? null,
-      type: rule.type ?? 'expense',
-      amount_minor: rule.amount_minor,
-      currency: rule.currency,
-      frequency: rule.frequency,
-      interval_count: rule.interval_count ?? 1,
-      next_run_date: rule.next_run_date,
-      end_date: rule.end_date ?? null,
-      active: rule.active ?? true,
-    }).catch(() => {})
-    throw error
-  }
-}
-
 /** Create or replace a rule's editable fields (title/amount/category/dates…). */
 export async function updateRule(repository, rule, patch) {
-  return rewriteRule(repository, rule, patch)
+  return repository.updateRecurring(rule.id, patch)
 }
 
 export async function setRuleActive(repository, rule, active) {
-  return rewriteRule(repository, rule, { active })
+  return repository.updateRecurring(rule.id, { active })
 }
 
 /**
- * Post a due rule immediately: advance next_run_date first (so the schedule
- * rolls forward), then generate today's transaction linked to the new rule.
- * Returns { rule, transaction }.
+ * Post a due rule immediately: advance next_run_date (schedule rolls forward),
+ * then generate today's transaction linked to the rule. Returns { rule, transaction }.
  */
 export async function postRuleNow(repository, rule) {
   const today = isoDate()
-  const updated = await rewriteRule(repository, rule, {
+  const updated = await repository.updateRecurring(rule.id, {
     next_run_date: advanceNextRun(rule.next_run_date || today, rule.frequency, rule.interval_count),
   })
   const transaction = await repository.addTransaction({
