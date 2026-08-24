@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PULSE — art direction preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --base:#0A0D13; --surface:#10141C; --raised:#161C26;
+    --border:rgba(255,255,255,.07); --border-strong:rgba(255,255,255,.14);
+    --ink:#EDF1F7; --muted:#8A94A6; --faint:#556070;
+    --income:#3DDC97; --expense:#FF6B81; --emi:#FFB454;
+    --brand:#6C8CFF; --brand-to:#A78BFA;
+    --glow-brand:0 8px 28px rgba(108,140,255,.35);
+  }
+  .day{
+    --base:#EEF1F6; --surface:#FFFFFF; --raised:#FFFFFF;
+    --border:#E3E8F0; --border-strong:#CBD4E1;
+    --ink:#10141C; --muted:#5C6779; --faint:#9AA5B5;
+    --income:#0FA36B; --expense:#E4405F; --emi:#D98A1F;
+    --brand:#4F6BED; --brand-to:#7C5CE8;
+    --glow-brand:0 8px 24px rgba(79,107,237,.25);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#05070B;font-family:'Inter',system-ui,sans-serif;color:#EDF1F7;padding:48px 32px}
+  .masthead{max-width:1180px;margin:0 auto 36px;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:18px}
+  h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:44px;letter-spacing:-.02em;
+     background:linear-gradient(120deg,#EDF1F7,#6C8CFF);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tags{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:#8A94A6}
+  .stage{max-width:1180px;margin:0 auto;display:flex;gap:40px;flex-wrap:wrap;align-items:flex-start}
+
+  .phone{width:360px;background:var(--base);border-radius:38px;padding:22px 16px 96px;border:1px solid var(--border-strong);position:relative;overflow:hidden}
+  .phone.night{box-shadow:0 30px 80px rgba(0,0,0,.6)}
+  .aurora{position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:320px;height:220px;
+          background:radial-gradient(60% 70% at 50% 20%, rgba(108,140,255,.35), transparent 70%);filter:blur(10px)}
+  .notch{width:110px;height:26px;background:rgba(255,255,255,.06);border-radius:14px;margin:0 auto 20px;position:relative}
+  .day .notch{background:rgba(16,20,28,.08)}
+  .greet{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;position:relative}
+  .month{font-size:10.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:600}
+  .avatar{width:32px;height:32px;border-radius:11px;background:linear-gradient(135deg,var(--brand),var(--brand-to));display:grid;place-items:center;font-size:13px;font-weight:700;color:#fff}
+  .hero{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 16px 40px rgba(0,0,0,.45)}
+  .day .hero{box-shadow:0 12px 30px rgba(16,20,28,.08)}
+  .hero-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:600;margin-bottom:8px}
+  .hero-amount{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:40px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .pills{display:flex;gap:8px;margin-top:12px}
+  .pill{font-size:11px;font-weight:600;padding:4px 9px;border-radius:999px}
+  .pill.up{color:var(--income);background:color-mix(in srgb,var(--income) 16%,transparent)}
+  .pill.down{color:var(--muted);background:color-mix(in srgb,var(--muted) 14%,transparent)}
+  .duo{display:flex;gap:10px;margin-top:10px;position:relative}
+  .tile{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:13px 14px}
+  .k{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:600}
+  .v{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:19px;margin-top:5px;font-variant-numeric:tabular-nums}
+  .v.in{color:var(--income)} .v.out{color:var(--expense)}
+  .sect{font-size:10.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:600;margin:22px 2px 10px;display:flex;justify-content:space-between}
+  .sect a{color:var(--brand);text-decoration:none;font-weight:600;letter-spacing:.06em}
+
+  .chartcard{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px 16px 12px;position:relative}
+  .bars{display:flex;align-items:flex-end;gap:5px;height:70px}
+  .bars i{flex:1;border-radius:4px;background:color-mix(in srgb,var(--brand) 22%,transparent)}
+  .bars i.max{background:linear-gradient(180deg,var(--brand),var(--brand-to));box-shadow:var(--glow-brand)}
+  .axis{display:flex;justify-content:space-between;font-size:9.5px;color:var(--faint);margin-top:8px}
+
+  .brow{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:11px 14px;margin-bottom:8px}
+  .bmain{flex:1}
+  .btop{display:flex;justify-content:space-between;font-size:12.5px;font-weight:500}
+  .bnum{color:var(--muted);font-weight:500;font-size:11.5px;font-variant-numeric:tabular-nums}
+  .bnum.over{color:var(--expense)}
+  .track{height:6px;border-radius:99px;background:color-mix(in srgb,var(--ink) 8%,transparent);margin-top:7px;overflow:hidden}
+  .fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--brand),var(--brand-to))}
+  .fill.green{background:var(--income)}
+  .fill.red{background:var(--expense)}
+
+  .trow{display:flex;align-items:center;gap:12px;padding:10px 2px;border-bottom:1px solid var(--border)}
+  .trow:last-child{border-bottom:none}
+  .tico{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-size:15px}
+  .tmain{flex:1;min-width:0}
+  .tt{font-size:13px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ts{font-size:11px;color:var(--faint);margin-top:2px}
+  .ta{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .ta.in{color:var(--income)}
+
+  .dock{position:absolute;left:14px;right:14px;bottom:14px;height:62px;border-radius:21px;
+        background:color-mix(in srgb,var(--raised) 72%,transparent);backdrop-filter:blur(20px);
+        border:1px solid var(--border-strong);display:flex;align-items:center;padding:6px;box-shadow:0 18px 44px rgba(0,0,0,.5)}
+  .day .dock{box-shadow:0 14px 34px rgba(16,20,28,.14)}
+  .ditem{flex:1;height:100%;border-radius:15px;display:grid;place-items:center;color:var(--faint);position:relative}
+  .ditem.on{color:#fff;background:linear-gradient(135deg,var(--brand),var(--brand-to));box-shadow:var(--glow-brand)}
+  .day .ditem.on{color:#fff}
+  .fab{position:absolute;right:24px;bottom:58px;width:58px;height:58px;border-radius:50%;
+       background:linear-gradient(135deg,var(--brand),var(--brand-to));box-shadow:var(--glow-brand);
+       display:grid;place-items:center;color:#fff;font-size:28px;font-weight:300;z-index:3;border:3px solid var(--base)}
+
+  .sheet{flex:1;min-width:340px;max-width:520px;display:flex;flex-direction:column;gap:26px}
+  .panel{background:#10141C;border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:26px}
+  .panel h2{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:19px;margin-bottom:4px}
+  .panel p.note{font-size:12.5px;color:#8A94A6;line-height:1.55;margin-bottom:18px}
+  .spec-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .swatch{width:86px;border:1px solid rgba(255,255,255,.09);border-radius:10px;overflow:hidden;background:#0A0D13}
+  .swatch i{display:block;height:44px}
+  .swatch div{padding:6px 8px;font-size:10px;line-height:1.4;color:#8A94A6}
+  .swatch b{display:block;font-size:10.5px;color:#EDF1F7}
+  .type-hero{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:38px;letter-spacing:-.02em}
+  .type-ui{font-size:14px;color:#8A94A6;margin-top:6px}
+  .caps{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A94A6;margin-top:16px;font-weight:600}
+  .btn{display:inline-block;font:600 13.5px 'Inter',sans-serif;border-radius:14px;padding:12px 20px;border:1px solid transparent;cursor:pointer}
+  .btn.pri{background:linear-gradient(135deg,#6C8CFF,#A78BFA);color:#fff;box-shadow:0 8px 28px rgba(108,140,255,.35)}
+  .btn.sec{background:#161C26;color:#EDF1F7;border-color:rgba(255,255,255,.14)}
+  .btn.danger{background:transparent;color:#FF6B81;border-color:rgba(255,107,129,.35)}
+  .field{margin-top:14px}
+  .field label{display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#8A94A6;margin-bottom:6px;font-weight:600}
+  .field input{width:100%;font:15px 'Inter',sans-serif;padding:13px 15px;border:1px solid transparent;border-radius:14px;background:#0D1119;color:#EDF1F7;outline:none}
+  .field input:focus{border-color:#6C8CFF;box-shadow:0 0 0 3px rgba(108,140,255,.2)}
+  .chip{display:inline-flex;align-items:center;gap:7px;font:500 12px 'Inter',sans-serif;border-radius:999px;padding:6px 12px;margin:4px 6px 0 0}
+  .ring{--p:72;width:78px;height:78px;border-radius:50%;
+        background:conic-gradient(from -90deg,#6C8CFF calc(var(--p)*1%),#A78BFA calc(var(--p)*1% + 6%),rgba(255,255,255,.07) 0);
+        display:grid;place-items:center;filter:drop-shadow(0 6px 18px rgba(108,140,255,.35))}
+  .ring i{width:60px;height:60px;background:#10141C;border-radius:50%;display:grid;place-items:center;font:600 14px 'Space Grotesk';font-style:normal}
+  .motion li{font-size:12.5px;color:#B9C2CF;line-height:1.75}
+  ul{padding-left:18px}
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div>
+    <div class="tags">MoneyOS revamp · Direction 2 of 3</div>
+    <h1>Pulse</h1>
+  </div>
+  <div class="tags">money at full wattage · electric · data-forward · premium night</div>
+</div>
+
+<div class="stage">
+
+  <div class="phone night">
+    <div class="aurora"></div>
+    <div class="notch"></div>
+    <div class="greet"><span class="month">August 2026</span><span class="avatar">R</span></div>
+    <div class="hero">
+      <div class="hero-label">Net this month</div>
+      <div class="hero-amount">₹48,250</div>
+      <div class="pills"><span class="pill up">▲ 31% saved</span><span class="pill down">on pace vs July</span></div>
+    </div>
+    <div class="duo">
+      <div class="tile"><div class="k">Money in</div><div class="v in">+₹86,500</div><div class="ts" style="margin-top:2px">+12% vs Jul</div></div>
+      <div class="tile"><div class="k">Money out</div><div class="v out">−₹38,250</div><div class="ts" style="margin-top:2px">−8% vs Jul</div></div>
+    </div>
+
+    <div class="sect">Daily spend <a>Details</a></div>
+    <div class="chartcard">
+      <div class="bars">
+        <i style="height:14%"></i><i style="height:22%"></i><i style="height:34%"></i><i style="height:20%"></i><i style="height:12%"></i>
+        <i style="height:46%"></i><i style="height:30%"></i><i style="height:18%"></i><i style="height:54%"></i><i style="height:26%"></i>
+        <i style="height:38%"></i><i style="height:16%"></i><i style="height:60%"></i><i style="height:34%"></i><i class="max" style="height:92%"></i>
+        <i style="height:28%"></i><i style="height:42%"></i><i style="height:20%"></i><i style="height:14%"></i><i style="height:50%"></i>
+        <i style="height:30%"></i><i style="height:24%"></i><i style="height:56%"></i><i style="height:18%"></i><i style="height:36%"></i>
+      </div>
+      <div class="axis"><span>Aug 1</span><span>8</span><span>15</span><span>22</span><span>31</span></div>
+    </div>
+
+    <div class="sect">Budgets</div>
+    <div class="brow"><div class="bmain"><div class="btop"><span>Food &amp; dining</span><span class="bnum">₹8,400 / ₹12,000</span></div><div class="track"><div class="fill green" style="width:70%"></div></div></div></div>
+    <div class="brow"><div class="bmain"><div class="btop"><span>Transport</span><span class="bnum">₹2,100 / ₹4,000</span></div><div class="track"><div class="fill green" style="width:52%"></div></div></div></div>
+    <div class="brow"><div class="bmain"><div class="btop"><span>Shopping</span><span class="bnum over">₹5,600 / ₹5,000 · over by ₹600</span></div><div class="track"><div class="fill red" style="width:100%"></div></div></div></div>
+
+    <div class="sect">Recent</div>
+    <div class="trow"><span class="tico" style="background:color-mix(in srgb,var(--income) 16%,transparent)">💼</span><div class="tmain"><div class="tt">Salary — Acme Pvt Ltd</div><div class="ts">Aug 21 · Income</div></div><span class="ta in">+₹72,000</span></div>
+    <div class="trow"><span class="tico" style="background:color-mix(in srgb,var(--expense) 16%,transparent)">🛍️</span><div class="tmain"><div class="tt">Amazon — order #48121</div><div class="ts">Yesterday · Shopping</div></div><span class="ta">−₹1,299</span></div>
+
+    <div class="fab">+</div>
+    <div class="dock">
+      <a class="ditem on"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg></a>
+      <a class="ditem"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></a>
+      <a class="ditem"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5"/><path d="M16 5.5a3 3 0 0 1 0 5.6"/></svg></a>
+      <a class="ditem"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3v9l6 4"/><circle cx="12" cy="12" r="9"/></svg></a>
+      <a class="ditem"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="8" r="3"/><path d="M5 20c.9-3.2 3.6-5 7-5s6.1 1.8 7 5"/></svg></a>
+    </div>
+  </div>
+
+  <div class="phone day">
+    <div class="notch"></div>
+    <div class="greet"><span class="month">Light theme · secondary</span><span class="avatar">R</span></div>
+    <div class="hero">
+      <div class="hero-label">Net this month</div>
+      <div class="hero-amount">₹48,250</div>
+      <div class="pills"><span class="pill up">▲ 31% saved</span><span class="pill down">on pace vs July</span></div>
+    </div>
+    <div class="duo">
+      <div class="tile"><div class="k">Money in</div><div class="v in">+₹86,500</div></div>
+      <div class="tile"><div class="k">Money out</div><div class="v out">−₹38,250</div></div>
+    </div>
+    <div class="sect">Budgets</div>
+    <div class="brow"><div class="bmain"><div class="btop"><span>Food &amp; dining</span><span class="bnum">₹8,400 / ₹12,000</span></div><div class="track"><div class="fill" style="width:70%"></div></div></div></div>
+    <div class="brow"><div class="bmain"><div class="btop"><span>Shopping</span><span class="bnum over">₹5,600 / ₹5,000 · over</span></div><div class="track"><div class="fill red" style="width:100%"></div></div></div></div>
+    <div class="sect">Recent</div>
+    <div class="trow"><span class="tico" style="background:color-mix(in srgb,var(--income) 14%,transparent)">💼</span><div class="tmain"><div class="tt">Salary — Acme Pvt Ltd</div><div class="ts">Aug 21 · Income</div></div><span class="ta in">+₹72,000</span></div>
+    <div class="trow"><span class="tico" style="background:color-mix(in srgb,var(--expense) 14%,transparent)">🍔</span><div class="tmain"><div class="tt">Swiggy — dinner</div><div class="ts">Aug 20 · Food &amp; dining</div></div><span class="ta">−₹420</span></div>
+    <div class="fab">+</div>
+    <div class="dock">
+      <a class="ditem on"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg></a>
+      <a class="ditem"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8"/></svg></a>
+      <a class="ditem"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5"/></svg></a>
+      <a class="ditem"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3v9l6 4"/><circle cx="12" cy="12" r="9"/></svg></a>
+    </div>
+  </div>
+
+  <div class="sheet">
+    <div class="panel">
+      <h2>Type system</h2>
+      <p class="note">Space Grotesk numerals give balances a technical, instrument-panel voice; uppercase micro-labels are the signature.</p>
+      <div class="type-hero">₹48,250</div>
+      <div class="caps">Money in · money out · budgets · upcoming</div>
+      <div class="type-ui">Inter body — dense lists stay readable at 13–15px with tabular figures.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Palette</h2>
+      <p class="note">Deep blue-charcoal base; mint/coral semantics glow only on fills and rings — never on text.</p>
+      <div class="spec-row">
+        <div class="swatch"><i style="background:#0A0D13"></i><div><b>Base</b>#0A0D13</div></div>
+        <div class="swatch"><i style="background:#10141C"></i><div><b>Surface</b>#10141C</div></div>
+        <div class="swatch"><i style="background:#3DDC97"></i><div><b>Income</b>#3DDC97</div></div>
+        <div class="swatch"><i style="background:#FF6B81"></i><div><b>Expense</b>#FF6B81</div></div>
+        <div class="swatch"><i style="background:#FFB454"></i><div><b>EMI</b>#FFB454</div></div>
+        <div class="swatch"><i style="background:linear-gradient(135deg,#6C8CFF,#A78BFA)"></i><div><b>Brand grad</b>periwinkle→violet</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Controls</h2>
+      <p class="note">Gradient primary w/ glow, filled borderless fields with brand focus ring, translucent tinted chips.</p>
+      <span class="btn pri">Add transaction</span>
+      <span class="btn sec">Settle up</span>
+      <span class="btn danger">Delete</span>
+      <div class="field"><label>Amount</label><input value="1,299.00"></div>
+      <div>
+        <span class="chip" style="background:rgba(61,220,151,.14);color:#3DDC97">● Salary</span>
+        <span class="chip" style="background:rgba(255,107,129,.14);color:#FF6B81">● Food &amp; dining</span>
+        <span class="chip" style="background:rgba(255,180,84,.14);color:#FFB454">● Loan EMI</span>
+        <span class="chip" style="background:rgba(108,140,255,.14);color:#6C8CFF">● Subscriptions</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:18px;margin-top:20px">
+        <div class="ring"><i>72%</i></div>
+        <div class="type-ui" style="margin-top:0">Gradient arc ring with drop-glow,<br>dark inset face, % center.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Motion personality</h2>
+      <ul class="motion">
+        <li>Springs (320/26) everywhere; press scale .97.</li>
+        <li>Count-up on all money figures; shimmer skeletons.</li>
+        <li>Dock active pill slides via shared layout animation.</li>
+        <li>FAB morphs to ✕ when the add-sheet opens; overdue badges pulse once.</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

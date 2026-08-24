@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEADOW — art direction preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --base:#F4F7F2; --surface:#FFFFFF; --border:#E3EBE2;
+    --ink:#17251C; --muted:#5F6F64; --faint:#93A397;
+    --income:#16A34A; --expense:#E5484D; --emi:#EE9D2B;
+    --brand:#0D9488; --brand-to:#34D399;
+    --soft:0 6px 18px rgba(23,37,28,.08);
+    --track:#E9F0E8;
+  }
+  .dusk{
+    --base:#101915; --surface:#18231D; --border:#26332B;
+    --ink:#E9F2EA; --muted:#9DB0A2; --faint:#5F7266;
+    --income:#4ADE80; --expense:#F87171; --emi:#FBBF24;
+    --brand:#2DD4BF; --brand-to:#4ADE80;
+    --soft:0 8px 22px rgba(0,0,0,.35);
+    --track:#22302A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#E9EFE6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#17251C;padding:48px 32px}
+  .masthead{max-width:1180px;margin:0 auto 36px;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;border-bottom:3px solid #17251C;padding-bottom:18px}
+  h1{font-weight:800;font-size:44px;letter-spacing:-.02em}
+  h1 em{font-style:normal;background:linear-gradient(120deg,#0D9488,#34D399);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tags{font-size:12px;color:#5F6F64}
+  .stage{max-width:1180px;margin:0 auto;display:flex;gap:40px;flex-wrap:wrap;align-items:flex-start}
+
+  .phone{width:360px;background:var(--base);border-radius:40px;padding:22px 16px 100px;border:1px solid var(--border);box-shadow:var(--soft);position:relative}
+  .notch{width:110px;height:26px;background:rgba(23,37,28,.07);border-radius:14px;margin:0 auto 20px}
+  .dusk .notch{background:rgba(233,242,234,.08)}
+  .greet{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .hello{font-size:16px;font-weight:800}
+  .hello small{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-top:2px}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#DCF0E1,#DBEDF5);border:1px solid var(--border);display:grid;place-items:center;font-size:13px}
+
+  .hero{background:linear-gradient(135deg,#FFFFFF,#F2FAF4);border:1px solid var(--border);border-radius:22px;padding:18px;box-shadow:var(--soft)}
+  .hero-label{font-size:11px;font-weight:600;color:var(--muted)}
+  .hero-amount{font-size:32px;font-weight:800;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums}
+  .chiprow{margin-top:10px}
+  .minipill{font-size:11px;font-weight:600;padding:5px 10px;border-radius:999px;margin-right:6px}
+  .duo{display:flex;gap:10px;margin-top:12px}
+  .tile{flex:1;border-radius:20px;padding:13px 14px;border:1px solid transparent}
+  .tile.in{background:#DCF0E1}.tile.in .v{color:#1B7A4B}
+  .tile.out{background:#FFE8D9}.tile.out .v{color:#C2541A}
+  .k{font-size:10.5px;font-weight:600;color:var(--muted)}
+  .v{font-size:18px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums}
+  .s{font-size:10.5px;color:var(--faint);margin-top:2px}
+
+  .sect{font-size:14px;font-weight:700;margin:22px 4px 10px;display:flex;justify-content:space-between;align-items:center}
+  .sect a{color:var(--brand);text-decoration:none;font-size:12px;font-weight:600}
+
+  .chartcard{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:16px;box-shadow:var(--soft)}
+  .bars{display:flex;align-items:flex-end;gap:5px;height:70px}
+  .bars i{flex:1;border-radius:6px 6px 3px 3px;background:#CDE7DC}
+  .bars i.max{background:linear-gradient(180deg,var(--brand),var(--brand-to))}
+  .axis{display:flex;justify-content:space-between;font-size:9.5px;color:var(--faint);margin-top:8px}
+
+  .brow{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:13px 15px;margin-bottom:9px;box-shadow:var(--soft)}
+  .btop{display:flex;justify-content:space-between;font-size:13px;font-weight:600}
+  .btop span:last-child{color:var(--muted);font-weight:500;font-variant-numeric:tabular-nums}
+  .btop span.over{color:var(--expense);font-weight:700}
+  .track{height:10px;border-radius:99px;background:var(--track);margin-top:9px;overflow:hidden}
+  .fill{height:100%;border-radius:99px;background:var(--income)}
+  .fill.red{background:var(--expense)}
+  .note-line{font-size:11px;color:var(--muted);margin-top:7px}
+
+  .trow{display:flex;align-items:center;gap:12px;padding:10px 4px}
+  .tico{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;font-size:17px}
+  .tmain{flex:1;min-width:0}
+  .tt{font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ts{font-size:11px;color:var(--muted);margin-top:2px}
+  .ta{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .ta.in{color:var(--income)}
+
+  .dock{position:absolute;left:16px;right:16px;bottom:16px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--soft);border-radius:24px;display:flex;padding:9px 8px}
+  .ditem{flex:1;text-align:center;color:var(--faint);text-decoration:none}
+  .ditem .ic{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;margin:0 auto}
+  .ditem.on .ic{background:#DCF0E1;color:#0D9488}
+  .dlabel{font-size:9px;font-weight:600;margin-top:3px;display:block}
+  .fab{position:absolute;right:24px;bottom:86px;width:62px;height:62px;border-radius:50%;
+       background:linear-gradient(135deg,var(--brand),var(--brand-to));color:#fff;display:grid;place-items:center;
+       font-size:30px;font-weight:300;box-shadow:0 12px 28px rgba(13,148,136,.35);z-index:3;border:4px solid var(--base)}
+
+  .sheet{flex:1;min-width:340px;max-width:520px;display:flex;flex-direction:column;gap:26px}
+  .panel{background:#FFFFFF;border:1px solid #E3EBE2;border-radius:22px;padding:26px;box-shadow:var(--soft)}
+  .panel h2{font-weight:800;font-size:19px;margin-bottom:4px}
+  .panel p.note{font-size:12.5px;color:#5F6F64;line-height:1.55;margin-bottom:18px}
+  .spec-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .swatch{width:86px;border:1px solid #E3EBE2;border-radius:12px;overflow:hidden;background:#fff}
+  .swatch i{display:block;height:44px}
+  .swatch div{padding:6px 8px;font-size:10px;line-height:1.4;color:#5F6F64}
+  .swatch b{display:block;font-size:10.5px;color:#17251C}
+  .type-hero{font-weight:800;font-size:36px;letter-spacing:-.02em}
+  .type-ui{font-size:14px;color:#5F6F64;margin-top:6px}
+  .btn{display:inline-block;font:600 13.5px 'Plus Jakarta Sans',sans-serif;border-radius:999px;padding:12px 22px;border:1px solid transparent;cursor:pointer}
+  .btn.pri{background:linear-gradient(135deg,#0D9488,#34D399);color:#fff;box-shadow:0 10px 24px rgba(13,148,136,.3)}
+  .btn.sec{background:#fff;color:#17251C;border-color:#D5E2D4}
+  .btn.danger{background:#FDE8E8;color:#C0392B}
+  .field{margin-top:14px}
+  .field label{display:block;font-size:11px;font-weight:600;color:#5F6F64;margin-bottom:6px}
+  .field input{width:100%;font:15px 'Plus Jakarta Sans',sans-serif;font-weight:500;padding:13px 15px;border:2px solid transparent;border-radius:14px;background:#EFF4EE;color:#17251C;outline:none}
+  .field input:focus{background:#fff;border-color:#0D9488}
+  .pchip{display:inline-flex;align-items:center;gap:7px;font:600 12px 'Plus Jakarta Sans',sans-serif;border-radius:999px;padding:7px 13px;margin:4px 6px 0 0}
+  .ring{--p:72;width:82px;height:82px;border-radius:50%;background:conic-gradient(from -90deg,#0D9488 calc(var(--p)*1%),#E9F0E8 0);display:grid;place-items:center}
+  .ring i{width:62px;height:62px;background:#fff;border-radius:50%;display:grid;place-items:center;font:800 15px 'Plus Jakarta Sans';font-style:normal}
+  .motion li{font-size:12.5px;color:#33463A;line-height:1.75}
+  ul{padding-left:18px}
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div>
+    <div class="tags">MoneyOS revamp · Direction 3 of 3</div>
+    <h1>Meadow</h1>
+  </div>
+  <div class="tags">friendly money, zero jitters · warm · rounded · encouraging</div>
+</div>
+
+<div class="stage">
+
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="greet"><div class="hello">Good evening 👋<small>Here's your August so far</small></div><span class="avatar">🌿</span></div>
+    <div class="hero">
+      <div class="hero-label">Net saved this month</div>
+      <div class="hero-amount">₹48,250</div>
+      <div class="chiprow"><span class="minipill" style="background:#DCF0E1;color:#1B7A4B">▲ 31% of income</span><span class="minipill" style="background:#DBEDF5;color:#23698C">on pace vs July</span></div>
+    </div>
+    <div class="duo">
+      <div class="tile in"><div class="k">MONEY IN</div><div class="v">+₹86,500</div><div class="s">+12% vs Jul — nice</div></div>
+      <div class="tile out"><div class="k">MONEY OUT</div><div class="v">−₹38,250</div><div class="s">−8% vs Jul</div></div>
+    </div>
+
+    <div class="sect">Daily spend <a>See all</a></div>
+    <div class="chartcard">
+      <div class="bars">
+        <i style="height:14%"></i><i style="height:22%"></i><i style="height:34%"></i><i style="height:20%"></i><i style="height:12%"></i>
+        <i style="height:46%"></i><i style="height:30%"></i><i style="height:18%"></i><i style="height:54%"></i><i style="height:26%"></i>
+        <i style="height:38%"></i><i style="height:16%"></i><i style="height:60%"></i><i style="height:34%"></i><i class="max" style="height:92%"></i>
+        <i style="height:28%"></i><i style="height:42%"></i><i style="height:20%"></i><i style="height:14%"></i><i style="height:50%"></i>
+        <i style="height:30%"></i><i style="height:24%"></i><i style="height:56%"></i><i style="height:18%"></i><i style="height:36%"></i>
+      </div>
+      <div class="axis"><span>Aug 1</span><span>8</span><span>15</span><span>22</span><span>31</span></div>
+    </div>
+
+    <div class="sect">Budgets</div>
+    <div class="brow">
+      <div class="btop"><span>🍔 Food &amp; dining</span><span>₹8,400 / ₹12,000</span></div>
+      <div class="track"><div class="fill" style="width:70%"></div></div>
+      <div class="note-line">70% through the month budget — nice pace 👌</div>
+    </div>
+    <div class="brow">
+      <div class="btop"><span>🛍️ Shopping</span><span class="over">₹5,600 / ₹5,000 · over ₹600</span></div>
+      <div class="track"><div class="fill red" style="width:100%"></div></div>
+      <div class="note-line">Slightly over — easy to rebalance from Transport.</div>
+    </div>
+
+    <div class="sect">Recent</div>
+    <div class="trow"><span class="tico" style="background:#DCF0E1">💼</span><div class="tmain"><div class="tt">Salary — Acme Pvt Ltd</div><div class="ts">Aug 21 · Income</div></div><span class="ta in">+₹72,000</span></div>
+    <div class="trow"><span class="tico" style="background:#FFE8D9">🛍️</span><div class="tmain"><div class="tt">Amazon — order #48121</div><div class="ts">Yesterday · Shopping</div></div><span class="ta">−₹1,299</span></div>
+    <div class="trow"><span class="tico" style="background:#FCF3CF">⏰</span><div class="tmain"><div class="tt">Personal loan EMI</div><div class="ts">due Sep 5 · in 12 days</div></div><span class="ta">−₹12,500</span></div>
+
+    <div class="fab">+</div>
+    <div class="dock">
+      <a class="ditem on"><span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg></span><span class="dlabel">Home</span></a>
+      <a class="ditem"><span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="4"/><path d="M8 8h8M8 12h8"/></svg></span><span class="dlabel">Spends</span></a>
+      <a class="ditem"><span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5"/></svg></span><span class="dlabel">Ledger</span></a>
+      <a class="ditem"><span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2.5"/></svg></span><span class="dlabel">EMIs</span></a>
+    </div>
+  </div>
+
+  <div class="phone dusk">
+    <div class="notch"></div>
+    <div class="greet"><div class="hello">Dark variant<small>same warmth, dimmed</small></div><span class="avatar">🌙</span></div>
+    <div class="hero" style="background:linear-gradient(135deg,#18231D,#152420)">
+      <div class="hero-label">Net saved this month</div>
+      <div class="hero-amount">₹48,250</div>
+      <div class="chiprow"><span class="minipill" style="background:rgba(74,222,128,.14);color:#4ADE80">▲ 31% saved</span></div>
+    </div>
+    <div class="duo">
+      <div class="tile" style="background:rgba(74,222,128,.12)"><div class="k">MONEY IN</div><div class="v" style="color:#4ADE80">+₹86,500</div></div>
+      <div class="tile" style="background:rgba(248,113,113,.12)"><div class="k">MONEY OUT</div><div class="v" style="color:#F87171">−₹38,250</div></div>
+    </div>
+    <div class="sect">Recent</div>
+    <div class="trow"><span class="tico" style="background:rgba(74,222,128,.14)">💼</span><div class="tmain"><div class="tt">Salary — Acme Pvt Ltd</div><div class="ts">Aug 21 · Income</div></div><span class="ta in">+₹72,000</span></div>
+    <div class="trow"><span class="tico" style="background:rgba(251,191,36,.14)">⏰</span><div class="tmain"><div class="tt">Personal loan EMI</div><div class="ts">due Sep 5 · in 12 days</div></div><span class="ta">−₹12,500</span></div>
+    <div class="sect">Budgets</div>
+    <div class="brow">
+      <div class="btop"><span>🍔 Food &amp; dining</span><span>₹8,400 / ₹12,000</span></div>
+      <div class="track"><div class="fill" style="width:70%"></div></div>
+    </div>
+    <div class="fab">+</div>
+    <div class="dock">
+      <a class="ditem on"><span class="ic" style="background:rgba(45,212,191,.16)"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" stroke-width="2"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg></span><span class="dlabel">Home</span></a>
+      <a class="ditem"><span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="4"/><path d="M8 8h8"/></svg></span><span class="dlabel">Spends</span></a>
+      <a class="ditem"><span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5"/></svg></span><span class="dlabel">Ledger</span></a>
+      <a class="ditem"><span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2.5"/></svg></span><span class="dlabel">EMIs</span></a>
+    </div>
+  </div>
+
+  <div class="sheet">
+    <div class="panel">
+      <h2>Type system</h2>
+      <p class="note">One family, big weight contrast: Plus Jakarta Sans 800 numerals over 400 body keeps it friendly but sharp.</p>
+      <div class="type-hero">₹48,250</div>
+      <div class="type-ui">Jakarta 800 hero · 700 headings · 500 UI · tabular everywhere.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Palette</h2>
+      <p class="note">Sage-tinted light base; pastels live ONLY on chips/tiles/icons — data stays strong ink on white.</p>
+      <div class="spec-row">
+        <div class="swatch"><i style="background:#F4F7F2"></i><div><b>Sage air</b>#F4F7F2</div></div>
+        <div class="swatch"><i style="background:#DCF0E1"></i><div><b>Pastel sage</b>#DCF0E1</div></div>
+        <div class="swatch"><i style="background:#FFE8D9"></i><div><b>Pastel peach</b>#FFE8D9</div></div>
+        <div class="swatch"><i style="background:#DBEDF5"></i><div><b>Pastel sky</b>#DBEDF5</div></div>
+        <div class="swatch"><i style="background:linear-gradient(135deg,#0D9488,#34D399)"></i><div><b>Brand grad</b>teal→mint</div></div>
+        <div class="swatch"><i style="background:#E5484D"></i><div><b>Expense</b>#E5484D</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Controls</h2>
+      <p class="note">Pill buttons with squish press, filled fields with floating labels, pastel chips as the signature element.</p>
+      <span class="btn pri">Add transaction</span>
+      <span class="btn sec">Settle up</span>
+      <span class="btn danger">Delete</span>
+      <div class="field"><label>Amount</label><input value="1,299.00"></div>
+      <div>
+        <span class="pchip" style="background:#DCF0E1;color:#1B7A4B">💼 Salary</span>
+        <span class="pchip" style="background:#FFE8D9;color:#C2541A">🍔 Food &amp; dining</span>
+        <span class="pchip" style="background:#FCF3CF;color:#9C7A12">⏰ Loan EMI</span>
+        <span class="pchip" style="background:#EDE4F7;color:#7A5BA8">🎬 Subscriptions</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:18px;margin-top:20px">
+        <div class="ring"><i>72%</i></div>
+        <div class="type-ui" style="margin-top:0">Chunky round-cap ring,<br>springy draw-in animation.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Motion personality</h2>
+      <ul class="motion">
+        <li>Springs w/ slight overshoot (380/22); press squish to .94.</li>
+        <li>Budget bars spring-draw; over-budget shakes once, then rests red.</li>
+        <li>FAB rotates into ✕ when sheet opens; success actions pop a checkmark.</li>
+        <li>Encouraging micro-copy under budgets ("nice pace 👌").</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
