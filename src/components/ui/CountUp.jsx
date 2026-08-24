@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { animate, useMotionValue, useTransform } from 'framer-motion'
+import { motion, animate, useMotionValue, useTransform } from 'framer-motion'
 
 /**
  * CountUp — animated count-up for amounts (board.md motion rules).
