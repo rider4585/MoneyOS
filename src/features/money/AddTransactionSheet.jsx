@@ -17,6 +17,8 @@ import ConfirmSheet from './ConfirmSheet.jsx'
 
 export const ENTRY_CURRENCIES = [INR, 'USD', 'EUR', 'GBP', 'AED', 'SGD']
 
+const CURRENCY_SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£', AED: 'د.إ', SGD: 'S$' }
+
 const PAYMENT_METHODS = ['UPI', 'Cash', 'Card', 'NEFT', 'Bank transfer', 'Other']
 
 const TYPE_OPTIONS = [
@@ -98,20 +100,26 @@ export default function AddTransactionSheet({ open, onClose, prefill = null, onS
   useEffect(() => {
     if (!open || currency === INR) {
       setFxRate(null)
+      setFxState('idle')
       return undefined
     }
     let alive = true
+    setFxState('loading')
     fetchFxRateToInr(currency)
       .then((rate) => {
-        if (alive) setFxRate(rate)
+        if (!alive) return
+        setFxRate(rate)
+        setFxState('ready')
       })
       .catch(() => {
-        if (alive) setFxRate(null)
+        if (!alive) return
+        setFxRate(null)
+        setFxState('failed')
       })
     return () => {
       alive = false
     }
-  }, [open, currency])
+  }, [open, currency, fxAttempt])
 
   const kind = type === 'income' ? 'income' : 'expense'
   const chips = kindCats
@@ -179,14 +187,16 @@ export default function AddTransactionSheet({ open, onClose, prefill = null, onS
 
         {/* keypad-friendly amount + currency */}
         <span className="neu-inset flex items-center gap-2 rounded-2xl bg-base px-4 py-3 focus-within:ring-2 focus-within:ring-brand/50">
-          <span className="font-display text-2xl leading-none font-bold text-faint">₹</span>
+          <span className="font-display text-2xl leading-none font-bold text-faint">
+            {CURRENCY_SYMBOLS[currency] ?? currency}
+          </span>
           <input
             value={amountText}
             onChange={(e) => setAmountText(e.target.value.replace(/[^0-9.]/g, ''))}
             inputMode="decimal"
             autoComplete="off"
             placeholder="0"
-            aria-label="Amount in rupees"
+            aria-label={`Amount in ${currency === INR ? 'rupees' : currency}`}
             className="font-display w-full min-w-0 bg-transparent text-2xl font-bold tabular-nums outline-none placeholder:text-faint/60"
           />
           <select
@@ -203,11 +213,23 @@ export default function AddTransactionSheet({ open, onClose, prefill = null, onS
           </select>
         </span>
         {currency !== INR && (
-          <p className="-mt-2 text-xs text-muted">
-            {fxRate ? (
+          <p className="-mt-2 flex flex-wrap items-center gap-x-2 text-xs text-muted">
+            {fxState === 'ready' ? (
               <>
                 Snapshot at entry · 1 {currency} ≈ ₹{fxRate.toFixed(4)}
                 {inrPreview != null ? <> · this entry ≈ ₹{inrPreview.toLocaleString('en-IN')}</> : null}
+              </>
+            ) : fxState === 'failed' ? (
+              <>
+                <span className="font-semibold text-expense">Couldn&apos;t fetch live rate.</span>
+                <button
+                  type="button"
+                  onClick={() => setFxAttempt((n) => n + 1)}
+                  className="font-bold underline underline-offset-2"
+                >
+                  Retry
+                </button>
+                <span className="text-faint">(you can still save — rate snaps at save)</span>
               </>
             ) : (
               <>Fetching live rate…</>
