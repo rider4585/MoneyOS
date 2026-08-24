@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { ArrowLeftRight, Home, ReceiptText, Settings } from 'lucide-react'
+import { ArrowLeftRight, ChartPie, Home, ReceiptText } from 'lucide-react'
 
 const tabs = [
   { to: '/', label: 'Home', icon: Home },
@@ -7,7 +7,7 @@ const tabs = [
   // center slot is the FAB (rendered separately)
   null,
   { to: '/ledger', label: 'Ledger', icon: ArrowLeftRight },
-  { to: '/settings', label: 'Settings', icon: Settings },
+  { to: '/budgets', label: 'Budgets', icon: ChartPie },
 ]
 
 /** Bottom tab dock — frosted glass PWA-style nav. */

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Settings } from 'lucide-react'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import BottomNavDock from './BottomNavDock.jsx'
 import AddTransactionFab from './AddTransactionFab.jsx'
 import DemoBanner from './DemoBanner.jsx'
@@ -38,6 +39,15 @@ export default function AppShell() {
           className="mx-auto w-full max-w-xl px-5 pt-6 pb-40 sm:max-w-2xl md:max-w-3xl"
         >
           <DemoBanner />
+          <div className="flex justify-end">
+            <NavLink
+              to="/settings"
+              aria-label="Settings"
+              className="neu-card grid h-10 w-10 place-items-center rounded-full bg-surface text-muted transition-colors hover:text-ink"
+            >
+              <Settings size={18} strokeWidth={1.9} />
+            </NavLink>
+          </div>
           <Outlet />
         </motion.main>
 
