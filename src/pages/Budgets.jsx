@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AlertTriangle, ChartPie, ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react'
+import { AlertTriangle, ChartPie, ChevronLeft, ChevronRight, CloudOff, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import repository from '../data/index.js'
 import { formatInr, monthStart } from '../lib/money.js'
 import {
@@ -28,6 +28,8 @@ const EMPTY_FORM = { category_id: '', limitRupees: '', thresholdPct: '80' }
 export default function Budgets() {
   const [month, setMonth] = useState(monthStart())
   const [loaded, setLoaded] = useState(false)
+  const [loadError, setLoadError] = useState(false)
+  const [attempt, setAttempt] = useState(0)
   const [budgets, setBudgets] = useState([])
   const [monthTxns, setMonthTxns] = useState([])
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -51,12 +53,15 @@ export default function Budgets() {
     let alive = true
     setLoaded(false)
     reload(month)
-      .catch((error) => console.error('[budgets] load failed', error))
+      .catch((error) => {
+        console.error('[budgets] load failed', error)
+        if (alive) setLoadError(true)
+      })
       .finally(() => alive && setLoaded(true))
     return () => {
       alive = false
     }
-  }, [month, reload])
+  }, [month, reload, attempt])
 
   useEffect(() => {
     if (!confirmDeleteId) return undefined
@@ -178,6 +183,23 @@ export default function Budgets() {
           <SkeletonLoader variant="card" />
           <SkeletonLoader variant="card" />
         </div>
+      ) : loadError ? (
+        <EmptyState
+          icon={CloudOff}
+          title="Couldn't load budgets"
+          message="Something went wrong while fetching this month's budgets."
+          action={
+            <Button
+              icon={RefreshCw}
+              onClick={() => {
+                setLoadError(false)
+                setAttempt((a) => a + 1)
+              }}
+            >
+              Retry
+            </Button>
+          }
+        />
       ) : (
         <>
           {budgetRows.length ? (

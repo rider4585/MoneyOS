@@ -7,13 +7,15 @@ import {
   ArrowUpRight,
   CalendarClock,
   ChartPie,
+  CloudOff,
   ReceiptText,
+  RefreshCw,
   Repeat,
   Wallet,
 } from 'lucide-react'
 import repository from '../data/index.js'
 import { monthStart } from '../lib/money.js'
-import { Amount, EmptyState, GlassCard, ProgressBar, SkeletonLoader, StatTile } from '../components/ui/index.js'
+import { Amount, Button, EmptyState, GlassCard, ProgressBar, SkeletonLoader, StatTile } from '../components/ui/index.js'
 import PageHeader from '../features/plan/PageHeader.jsx'
 import SpendChart from '../features/plan/SpendChart.jsx'
 import { addMonthsIso, countdownLabel, daysUntil, monthLabel } from '../features/plan/dates.js'
@@ -36,6 +38,8 @@ export default function Dashboard() {
   const [recentTxns, setRecentTxns] = useState([])
   const [budgets, setBudgets] = useState([])
   const [emis, setEmis] = useState([])
+  const [loadError, setLoadError] = useState(false)
+  const [attempt, setAttempt] = useState(0)
   const { byId } = useCategories()
 
   const month = monthStart()
@@ -57,12 +61,15 @@ export default function Dashboard() {
         setBudgets(bud)
         setEmis(emiRows)
       })
-      .catch((error) => console.error('[dashboard] load failed', error))
+      .catch((error) => {
+        console.error('[dashboard] load failed', error)
+        if (alive) setLoadError(true)
+      })
       .finally(() => alive && setLoaded(true))
     return () => {
       alive = false
     }
-  }, [month])
+  }, [month, attempt])
 
   const income = useMemo(() => sumType(monthTxns, 'income'), [monthTxns])
   const expense = useMemo(() => sumType(monthTxns, 'expense'), [monthTxns])
@@ -127,6 +134,28 @@ export default function Dashboard() {
     { to: '/budgets', label: 'Budgets', icon: ChartPie, hint: budgets.length ? `${budgets.length} active` : 'Set your first' },
     { to: '/recurring', label: 'Recurring', icon: Repeat, hint: 'Rules & auto-posts' },
   ]
+
+  if (loadError) {
+    return (
+      <EmptyState
+        icon={CloudOff}
+        title="Couldn't load your data"
+        message="MoneyOS couldn't reach your data layer. Check your connection and try again."
+        action={
+          <Button
+            icon={RefreshCw}
+            onClick={() => {
+              setLoadError(false)
+              setLoaded(false)
+              setAttempt((a) => a + 1)
+            }}
+          >
+            Retry
+          </Button>
+        }
+      />
+    )
+  }
 
   if (!loaded) {
     return (

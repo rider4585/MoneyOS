@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Pause, Pencil, Play, Plus, Repeat, Trash2, Zap } from 'lucide-react'
+import { CloudOff, Pause, Pencil, Play, Plus, RefreshCw, Repeat, Trash2, Zap } from 'lucide-react'
 import repository from '../data/index.js'
 import { isoDate } from '../lib/money.js'
 import {
@@ -51,6 +51,8 @@ function ruleToForm(rule) {
 
 export default function Recurring() {
   const [loaded, setLoaded] = useState(false)
+  const [loadError, setLoadError] = useState(false)
+  const [attempt, setAttempt] = useState(0)
   const [rules, setRules] = useState([])
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
@@ -69,12 +71,15 @@ export default function Recurring() {
     let alive = true
     reload()
       .then(() => {})
-      .catch((error) => console.error('[recurring] load failed', error))
+      .catch((error) => {
+        console.error('[recurring] load failed', error)
+        if (alive) setLoadError(true)
+      })
       .finally(() => alive && setLoaded(true))
     return () => {
       alive = false
     }
-  }, [reload])
+  }, [reload, attempt])
 
   useEffect(() => {
     if (!confirmDeleteId) return undefined
@@ -202,6 +207,24 @@ export default function Recurring() {
           <SkeletonLoader variant="card" />
           <SkeletonLoader variant="card" />
         </div>
+      ) : loadError ? (
+        <EmptyState
+          icon={CloudOff}
+          title="Couldn't load rules"
+          message="Something went wrong while fetching your recurring rules."
+          action={
+            <Button
+              icon={RefreshCw}
+              onClick={() => {
+                setLoadError(false)
+                setLoaded(false)
+                setAttempt((a) => a + 1)
+              }}
+            >
+              Retry
+            </Button>
+          }
+        />
       ) : sortedRules.length ? (
         <motion.ul variants={rise} className="space-y-3">
           {sortedRules.map((rule) => {
