@@ -47,7 +47,10 @@ export function createSupabaseRepository() {
         .order('created_at', { ascending: false })
       if (filter.type) q = q.eq('type', filter.type)
       if (filter.category_id) q = q.eq('category_id', filter.category_id)
-      if (filter.month) q = q.gte('note_date', `${filter.month}-01`).lt('note_date', nextMonthStart(filter.month))
+      if (filter.month) {
+        const mk = monthKey(filter.month)
+        q = q.gte('note_date', `${mk}-01`).lt('note_date', nextMonthStart(mk))
+      }
       if (filter.q) q = q.ilike('description', `%${filter.q}%`)
       const { data, error } = await q
       if (error) throw error
@@ -62,7 +65,7 @@ export function createSupabaseRepository() {
         type: txn.type ?? 'expense',
         category_id: txn.category_id ?? null,
         ...money,
-        note_date: txn.note_date ?? new Date().toISOString().slice(0, 10),
+        note_date: dateOnly(txn.note_date),
         description: txn.description ?? '',
         payment_method: txn.payment_method ?? 'UPI',
         source: txn.source ?? 'manual',
@@ -132,8 +135,8 @@ export function createSupabaseRepository() {
         fx_rate_to_inr: money.fx_rate_to_inr,
         principal_inr_minor: money.inr_amount_minor,
         settled_inr_minor: Math.min(entry.settled_inr_minor ?? 0, money.inr_amount_minor),
-        entry_date: entry.entry_date ?? new Date().toISOString().slice(0, 10),
-        due_date: entry.due_date ?? null,
+        entry_date: dateOnly(entry.entry_date),
+        due_date: entry.due_date ? dateOnly(entry.due_date) : null,
         notes: entry.notes ?? null,
       }
       const { data, error } = await client().from('ledger_entries').insert(payload).select().single()
@@ -191,8 +194,8 @@ export function createSupabaseRepository() {
         tenure_months: emi.tenure_months,
         emi_amount_minor: emiMoney.amount_minor,
         emi_inr_amount_minor: emiMoney.inr_amount_minor,
-        start_date: emi.start_date ?? new Date().toISOString().slice(0, 10),
-        next_due_date: emi.next_due_date ?? emi.start_date ?? new Date().toISOString().slice(0, 10),
+        start_date: dateOnly(emi.start_date),
+        next_due_date: dateOnly(emi.next_due_date ?? emi.start_date),
         active: emi.active ?? true,
         notes: emi.notes ?? null,
       }
@@ -222,7 +225,7 @@ export function createSupabaseRepository() {
         currency: paidMoney.currency,
         fx_rate_to_inr: paidMoney.fx_rate_to_inr,
         paid_inr_minor: paidMoney.inr_amount_minor,
-        paid_on: installmentInput.paid_on ?? new Date().toISOString().slice(0, 10),
+        paid_on: dateOnly(installmentInput.paid_on),
         late: installmentInput.late ?? false,
         notes: installmentInput.notes ?? null,
       }
@@ -250,12 +253,12 @@ export function createSupabaseRepository() {
     // --------------------------------------------------------------- budgets
     async listBudgets(month) {
       const uid = await currentUserId()
-      const m = `${(month ?? new Date().toISOString().slice(0, 7)).slice(0, 7)}-01`
+      const m = `${monthKey(month)}-01`
       const { data, error } = await client()
         .from('budgets')
         .select('*')
         .eq('user_id', uid)
-        .gte('month', `${m}-01`)
+        .gte('month', m)
         .lt('month', nextMonthStart(m))
         .order('month', { ascending: false })
       if (error) throw error
@@ -265,7 +268,7 @@ export function createSupabaseRepository() {
     async setBudget(budget) {
       const uid = await currentUserId()
       if (!(budget.limit_inr_minor > 0)) throw new Error('setBudget: limit must be positive (INR minor)')
-      const month = `${(budget.month ?? new Date().toISOString().slice(0, 7)).slice(0, 7)}-01`
+      const month = `${monthKey(budget.month)}-01`
       const payload = {
         user_id: uid,
         category_id: budget.category_id,
@@ -311,8 +314,8 @@ export function createSupabaseRepository() {
         inr_amount_minor: money.inr_amount_minor,
         frequency: rule.frequency,
         interval_count: rule.interval_count ?? 1,
-        next_run_date: rule.next_run_date ?? new Date().toISOString().slice(0, 10),
-        end_date: rule.end_date ?? null,
+        next_run_date: dateOnly(rule.next_run_date),
+        end_date: rule.end_date ? dateOnly(rule.end_date) : null,
         last_run_at: null,
         active: rule.active ?? true,
       }
@@ -422,6 +425,20 @@ export function createSupabaseRepository() {
       return data
     },
   }
+}
+
+/** Month-ish input ('YYYY-MM' or 'YYYY-MM-DD…') → 'YYYY-MM'; absent → current month. */
+function monthKey(value) {
+  const m = /^(\d{4}-\d{2})/.exec(typeof value === 'string' ? value.trim() : '')
+  return m ? m[1] : new Date().toISOString().slice(0, 7)
+}
+
+/** Date-ish input ('YYYY-MM-DD…' or bare 'YYYY-MM') → DATE 'YYYY-MM-DD'; absent → today. */
+function dateOnly(value) {
+  const s = typeof value === 'string' ? value.trim() : ''
+  const m = /^(\d{4}-\d{2})(?:-(\d{2}))?/.exec(s)
+  if (!m) return new Date().toISOString().slice(0, 10)
+  return m[2] ? `${m[1]}-${m[2]}` : `${m[1]}-01`
 }
 
 function nextMonthStart(month) {
