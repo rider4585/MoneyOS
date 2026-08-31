@@ -94,7 +94,7 @@ export default function Ledger() {
     <section aria-label="Borrow and lent ledger">
       <header className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold">Ledger</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">Ledger</h1>
           <p className="text-sm text-muted">Who owes whom, at a glance</p>
         </div>
         <Button variant="brand" icon={Plus} onClick={() => setEntrySheetOpen(true)}>
@@ -104,25 +104,25 @@ export default function Ledger() {
 
       {/* net-position summary */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="neu-card rounded-3xl bg-surface p-4">
+        <div className="panel rounded-[18px] p-4">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs font-semibold tracking-wide text-muted uppercase">They owe you</p>
-            <span className="neu-inset grid h-8 w-8 place-items-center rounded-xl bg-base text-income">
+            <p className="micro-label">They owe you</p>
+            <span className="grid h-8 w-8 place-items-center rounded-xl border border-border bg-field text-income">
               <ArrowUpRight size={15} aria-hidden />
             </span>
           </div>
-          <p className="font-display mt-2 text-xl font-bold sm:text-2xl">
+          <p className="font-display mt-2 text-xl font-bold tracking-tight tabular-nums sm:text-2xl">
             <Amount value={totals.owedToMe} minor />
           </p>
         </div>
-        <div className="neu-card rounded-3xl bg-surface p-4">
+        <div className="panel rounded-[18px] p-4">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs font-semibold tracking-wide text-muted uppercase">You owe</p>
-            <span className="neu-inset grid h-8 w-8 place-items-center rounded-xl bg-base text-expense">
+            <p className="micro-label">You owe</p>
+            <span className="grid h-8 w-8 place-items-center rounded-xl border border-border bg-field text-expense">
               <ArrowDownLeft size={15} aria-hidden />
             </span>
           </div>
-          <p className="font-display mt-2 text-xl font-bold tabular-nums text-expense sm:text-2xl">
+          <p className="font-display mt-2 text-xl font-bold tracking-tight tabular-nums text-expense sm:text-2xl">
             ₹{(totals.iOwe / 100).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
           </p>
         </div>
@@ -163,7 +163,7 @@ export default function Ledger() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(pi * 0.05, 0.25), duration: 0.24 }}
-                className={`neu-card overflow-hidden rounded-3xl bg-surface ${isOpen ? 'neu-inset' : ''}`}
+                className={`panel overflow-hidden rounded-[18px] ${isOpen ? 'border-border-strong' : ''}`}
               >
                 <button
                   type="button"
@@ -173,7 +173,7 @@ export default function Ledger() {
                 >
                   <span
                     aria-hidden
-                    className="neu-inset grid h-11 w-11 shrink-0 place-items-center rounded-full bg-base text-sm font-bold"
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-border bg-field text-sm font-bold"
                     style={{ color: owesYou ? 'var(--income)' : 'var(--expense)' }}
                   >
                     {initials(person.name)}
@@ -193,7 +193,7 @@ export default function Ledger() {
                       animate={false}
                       className="text-base"
                     />
-                    <span className="block text-[10px] font-semibold tracking-wide uppercase text-faint">
+                    <span className="micro-label mt-0.5 block">
                       {person.net === 0 ? 'all square' : owesYou ? 'owes you' : 'you owe'}
                     </span>
                   </span>
@@ -209,7 +209,7 @@ export default function Ledger() {
                         const meta = dueMeta(entry.due_date)
                         const lent = entry.type === 'lent'
                         return (
-                          <div key={entry.id} className="neu-raised-sm rounded-2xl bg-base/60 px-3.5 py-3">
+                          <div key={entry.id} className="rounded-2xl border border-border bg-field px-3.5 py-3">
                             <div className="flex items-center gap-2">
                               <span
                                 aria-hidden

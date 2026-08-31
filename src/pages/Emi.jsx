@@ -80,7 +80,7 @@ export default function Emi() {
     <section aria-label="EMI tracker">
       <header className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold">EMIs</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">EMIs</h1>
           <p className="text-sm text-muted">
             {loading ? 'Loading…' : `${active.length} active ${active.length === 1 ? 'loan' : 'loans'}`}
           </p>
@@ -128,7 +128,7 @@ export default function Emi() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: Math.min(i * 0.05, 0.25), duration: 0.24 }}
-                  className={`neu-card rounded-3xl bg-surface p-4 ${!emi.active ? 'opacity-70' : ''}`}
+                  className={`panel rounded-[18px] p-4 ${!emi.active ? 'opacity-70' : ''}`}
                   aria-label={`${emi.name} — ${pct}% paid`}
                 >
                   <div className="flex items-start gap-4">
@@ -137,7 +137,7 @@ export default function Emi() {
                       <div className="flex items-start justify-between gap-2">
                         <h2 className="font-display truncate text-base font-bold">{emi.name}</h2>
                         {!emi.active && (
-                          <span className="neu-inset shrink-0 rounded-full bg-base px-2 py-0.5 text-[9px] font-bold tracking-wide uppercase text-income">
+                          <span className="shrink-0 rounded-full border border-border bg-field px-2 py-0.5 text-[9px] font-bold tracking-wide uppercase text-income">
                             Done
                           </span>
                         )}
@@ -188,7 +188,7 @@ export default function Emi() {
                       ) : (
                         history.map((inst) => (
                           <div key={inst.id} className="flex items-center gap-2.5 rounded-2xl px-1 py-1.5">
-                            <span aria-hidden className="neu-inset grid h-7 w-7 place-items-center rounded-full bg-base text-income">
+                            <span aria-hidden className="grid h-7 w-7 place-items-center rounded-full border border-border bg-field text-income">
                               <CheckCircle2 size={13} />
                             </span>
                             <span className="min-w-0 flex-1 truncate text-xs text-muted tabular-nums">

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, ReceiptText, SearchX } from 'lucide-react'
 import repository from '../data/index.js'
+import { formatInr } from '../lib/money.js'
 import {
   Button,
   CategoryChip,
@@ -41,7 +42,8 @@ function monthLabel(monthKey) {
 }
 
 function formatRupees(minor) {
-  return `₹${(minor / 100).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+  // compact ₹lakh/₹crore for big month totals (money.js), else full en-IN
+  return formatInr(minor, { compact: true })
 }
 
 export default function Expenses() {
@@ -122,7 +124,7 @@ export default function Expenses() {
     <section aria-label="Expenses">
       <header className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold">Expenses</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">Expenses</h1>
           <p className="text-sm text-muted">
             {txns === null ? 'Loading…' : `${filtered.length} of ${txns.length} entries`}
           </p>
@@ -219,9 +221,7 @@ export default function Expenses() {
               aria-label={monthLabel(group.key)}
             >
               <div className="mb-2 flex items-baseline justify-between gap-2 px-1">
-                <h2 className="font-display text-sm font-bold tracking-wide uppercase">
-                  {monthLabel(group.key)}
-                </h2>
+                <h2 className="micro-label text-sm">{monthLabel(group.key)}</h2>
                 <p className="text-xs font-medium text-muted tabular-nums">
                   {group.spentMinor > 0 && <span className="text-expense">−{formatRupees(group.spentMinor)}</span>}
                   {group.spentMinor > 0 && group.earnedMinor > 0 ? ' · ' : null}
