@@ -14,13 +14,13 @@ export default function ThemeToggle({ className = '' }) {
       aria-checked={dark}
       aria-label="Toggle dark mode"
       onClick={toggleTheme}
-      className={`neu-inset relative h-10 w-[4.5rem] rounded-full bg-surface ${className}`}
+      className={`neu-inset relative h-10 w-[4.5rem] rounded-full bg-field ${className}`}
     >
       <motion.span
         layout
-        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-        className={`neu-raised-sm absolute top-1 grid h-8 w-8 place-items-center rounded-full bg-surface-raised ${
-          dark ? 'right-1 text-violet-300' : 'left-1 text-amber-500'
+        transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+        className={`absolute top-1 grid h-8 w-8 place-items-center rounded-full border border-border bg-surface-raised shadow-[var(--shadow-sm)] ${
+          dark ? 'right-1 text-brand' : 'left-1 text-emi'
         }`}
       >
         {dark ? <Moon size={16} /> : <Sun size={16} />}

@@ -40,7 +40,7 @@ export default function BottomSheet({
             exit={{ opacity: 0 }}
             transition={{ duration: reduceMotion ? 0 : 0.2 }}
             onClick={dismissible ? onClose : undefined}
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/55 backdrop-blur-sm"
           />
           <motion.div
             role="dialog"
@@ -50,7 +50,7 @@ export default function BottomSheet({
             animate={reduceMotion ? { opacity: 1 } : { y: 0 }}
             exit={reduceMotion ? { opacity: 0 } : { y: '100%' }}
             transition={
-              reduceMotion ? { duration: 0.15 } : { type: 'spring', stiffness: 400, damping: 42 }
+              reduceMotion ? { duration: 0.15 } : { type: 'spring', stiffness: 320, damping: 26 }
             }
             drag={reduceMotion || !dismissible ? false : 'y'}
             dragConstraints={{ top: 0, bottom: 0 }}
@@ -62,17 +62,17 @@ export default function BottomSheet({
                   }
                 : undefined
             }
-            className={`glass-panel relative w-full max-w-md rounded-t-[2rem] px-5 pt-3 pb-9 sm:rounded-[2rem] sm:pb-7 ${sheetClassName}`}
+            className={`glass-panel relative w-full max-w-md rounded-t-[24px] px-5 pt-3 pb-9 sm:rounded-[24px] sm:pb-7 ${sheetClassName}`}
           >
             <div
               aria-hidden
-              className="mx-auto mb-3 h-1.5 w-12 shrink-0 rounded-full bg-faint/50 sm:hidden"
+              className="mx-auto mb-3 h-1 w-12 shrink-0 rounded-full bg-faint/50 sm:hidden"
             />
             {(title || subtitle) && (
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   {title ? (
-                    <p className="font-display truncate text-lg font-bold">{title}</p>
+                    <p className="font-display truncate text-lg font-bold tracking-tight">{title}</p>
                   ) : null}
                   {subtitle ? <p className="mt-0.5 text-sm text-muted">{subtitle}</p> : null}
                 </div>
@@ -81,7 +81,7 @@ export default function BottomSheet({
                     type="button"
                     aria-label="Close"
                     onClick={onClose}
-                    className="neu-raised-sm grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface text-muted"
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-surface text-muted"
                   >
                     <X size={16} />
                   </Pressable>

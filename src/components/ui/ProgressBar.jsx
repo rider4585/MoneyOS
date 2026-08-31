@@ -7,10 +7,11 @@ const TONES = {
   emi: 'var(--emi)',
 }
 
+/* Pulse bars are slim (spec §6: 6px rounded track) */
 const HEIGHTS = {
-  sm: 'h-2',
-  md: 'h-3.5',
-  lg: 'h-5',
+  sm: 'h-1',
+  md: 'h-1.5',
+  lg: 'h-2',
 }
 
 export default function ProgressBar({
@@ -30,6 +31,14 @@ export default function ProgressBar({
   const fill = TONES[resolvedKey] ?? resolvedKey
   const track = HEIGHTS[size] ?? HEIGHTS.md
 
+  /* Over-budget states pulse once then rest at solid coral (pulse §2);
+     reduced motion skips straight to the resting state */
+  const fillAnimate = reduce
+    ? { width: `${ratio * 100}%` }
+    : over
+      ? { width: `${ratio * 100}%`, opacity: [0.45, 1] }
+      : { width: `${ratio * 100}%` }
+
   return (
     <div
       role="progressbar"
@@ -48,17 +57,21 @@ export default function ProgressBar({
           ) : null}
         </div>
       ) : null}
-      <div className={`neu-well overflow-hidden rounded-full bg-base ${track}`}>
+      <div className={`neu-well overflow-hidden rounded-full bg-field ${track}`}>
         <motion.div
           initial={reduce ? false : { width: 0 }}
-          animate={{ width: `${ratio * 100}%` }}
+          animate={fillAnimate}
           transition={{ duration: reduce ? 0 : 0.9, ease: 'easeOut' }}
           className="h-full rounded-full"
           style={{
             background:
-              fill === TONES.brand
+              resolvedKey === 'brand'
                 ? 'linear-gradient(90deg, var(--brand), var(--brand-to))'
                 : fill,
+            /* Soft end-glow on the fill itself — glow stays off text (pulse §2) */
+            boxShadow: `0 0 10px -2px color-mix(in srgb, ${
+              resolvedKey === 'brand' ? 'var(--brand)' : fill
+            } 55%, transparent)`,
           }}
         />
       </div>

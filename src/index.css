@@ -3,74 +3,115 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------------------
-   Design tokens — neumorphism × glassmorphism (board.md §Design language)
-   Semantic variables flip with .dark on <html>; Tailwind reads them via
-   @theme inline so utilities like bg-base/text-ink follow the theme.
+   PULSE design tokens — docs/design/rv-directions/pulse/spec.md §10.
+   Dark-first premium fintech: .dark is the canonical identity, light theme
+   is the first-class secondary on :root. Variable NAMES are kept identical
+   to v0.1 so Tailwind's @theme inline mapping (bg-base/text-ink/…) keeps
+   working everywhere; only values/recipes change.
 --------------------------------------------------------------------------- */
 
 :root {
   color-scheme: light;
 
-  /* Base surfaces — soft neutral light (#E0E5EC family) */
-  --base: #e0e5ec;
-  --surface: #e3e8f0;
-  --surface-raised: #eaeef5;
+  /* Surfaces */
+  --base: #eef1f6;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --field: #e9edf4; /* filled inputs, tracks, wells */
+
+  /* Hairlines */
+  --border: #e3e8f0;
+  --border-strong: #cbd4e1;
 
   /* Text */
-  --ink: #35405a;
-  --muted: #7d88a0;
-  --faint: #a3adc2;
+  --ink: #10141c;
+  --muted: #5c6779;
+  --faint: #9aa5b5;
 
-  /* Neumorphic shadow pair (light) */
-  --neu-dark: rgba(163, 177, 198, 0.6);
-  --neu-light: rgba(255, 255, 255, 0.9);
+  /* Semantics */
+  --income: #0fa36b; /* mint family, AA on light */
+  --expense: #e4405f; /* coral family */
+  --emi: #d98a1f; /* amber */
+  --brand: #4f6bed; /* periwinkle→violet gradient start */
+  --brand-to: #7c5ce8; /* gradient end */
 
-  /* Glass overlay (light) */
-  --glass-bg: rgba(255, 255, 255, 0.55);
-  --glass-border: rgba(255, 255, 255, 0.65);
-  --glass-shadow: 0 8px 32px rgba(53, 64, 90, 0.16);
+  /* Paired glows — decorative only (rings/fills/orbs), NEVER on text */
+  --glow-brand: color-mix(in srgb, var(--brand) 32%, transparent);
+  --glow-income: color-mix(in srgb, var(--income) 38%, transparent);
+  --glow-expense: color-mix(in srgb, var(--expense) 38%, transparent);
+  --glow-emi: color-mix(in srgb, var(--emi) 38%, transparent);
 
-  /* Accents (shared across themes) */
-  --income: #10b981; /* emerald — income/credit */
-  --expense: #f43f5e; /* rose — expense/debit */
-  --emi: #f59e0b; /* amber — EMI */
-  --brand: #8b5cf6; /* violet — brand/primary */
-  --brand-to: #6366f1; /* indigo — gradient end */
+  /* Elevation */
+  --card-shadow: 0 12px 32px rgba(16, 20, 28, 0.08), 0 2px 8px rgba(16, 20, 28, 0.05);
+  --shadow-sm: 0 4px 14px rgba(16, 20, 28, 0.08);
+
+  /* Glass overlay (floating dock, sheets) */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(16, 20, 28, 0.08);
+  --glass-shadow: 0 24px 48px rgba(16, 20, 28, 0.16);
+
+  /* Aurora hero backdrop (one per screen max) */
+  --aurora: radial-gradient(
+    64% 64% at 50% 0%,
+    color-mix(in srgb, var(--brand) 10%, transparent),
+    transparent 72%
+  );
 }
 
 .dark {
   color-scheme: dark;
 
-  /* Near-black slate base */
-  --base: #14171f;
-  --surface: #171b24;
-  --surface-raised: #1c212c;
+  --base: #0a0d13;
+  --surface: #10141c;
+  --surface-raised: #161c26;
+  --field: #0d1119;
 
-  --ink: #dde3ee;
-  --muted: #8b94a9;
-  --faint: #5c6579;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.14);
 
-  /* Dark neumorphic shadows */
-  --neu-dark: rgba(0, 0, 0, 0.55);
-  --neu-light: rgba(255, 255, 255, 0.06);
+  --ink: #edf1f7;
+  --muted: #8a94a6;
+  --faint: #556070;
 
-  /* Glass overlay (near-black translucent) */
-  --glass-bg: rgba(20, 23, 31, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --income: #3ddc97;
+  --expense: #ff6b81;
+  --emi: #ffb454;
+  --brand: #6c8cff;
+  --brand-to: #a78bfa;
+
+  --glow-brand: color-mix(in srgb, var(--brand) 40%, transparent);
+  --glow-income: color-mix(in srgb, var(--income) 42%, transparent);
+  --glow-expense: color-mix(in srgb, var(--expense) 42%, transparent);
+  --glow-emi: color-mix(in srgb, var(--emi) 42%, transparent);
+
+  --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 16px 40px rgba(0, 0, 0, 0.45);
+  --shadow-sm: 0 6px 18px rgba(0, 0, 0, 0.35);
+
+  --glass-bg: rgba(13, 17, 25, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.09);
+  --glass-shadow: 0 24px 56px rgba(0, 0, 0, 0.55);
+
+  --aurora: radial-gradient(
+    64% 64% at 50% 0%,
+    color-mix(in srgb, var(--brand) 12%, transparent),
+    transparent 72%
+  );
 }
 
 @theme inline {
-  /* Fonts: Outfit for display/headings, Inter for UI/body */
-  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  /* Fonts: Space Grotesk display/numerals, Inter UI/body (pulse §3) */
+  --font-display: "Space Grotesk", "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
   --color-base: var(--base);
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
+  --color-field: var(--field);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-faint: var(--faint);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
 
   --color-income: var(--income);
   --color-expense: var(--expense);
@@ -111,46 +152,64 @@ body {
   }
 }
 
-/* --------------------------- Neu / glass utilities ----------------------- */
+/* --------------------- Surface recipes (Pulse §4) ------------------------ */
+/* Legacy utility names kept so screens/pages keep composing them; each is
+   now an additive Pulse treatment themed entirely through variables.        */
 
-/* Raised neumorphic card — the board's canonical shadow */
+/* Card = hairline + layered panel shadow (pair with bg-surface) */
 @utility neu-card {
-  box-shadow:
-    8px 8px 16px var(--neu-dark),
-    -8px -8px 16px var(--neu-light);
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
 }
 
-/* Smaller raised element (chips, small buttons, FAB) */
+/* Small raised element (chips, small buttons, thumbs) */
 @utility neu-raised-sm {
-  box-shadow:
-    4px 4px 10px var(--neu-dark),
-    -4px -4px 10px var(--neu-light);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
-/* Pressed / inset state — inputs, toggles, wells */
+/* Recessed filled well — inputs, toggles, tracks (pair with bg-field) */
 @utility neu-inset {
-  box-shadow:
-    inset 5px 5px 10px var(--neu-dark),
-    inset -5px -5px 10px var(--neu-light);
+  box-shadow: inset 0 0 0 1px var(--border);
 }
 
-/* Deep inset well (progress tracks, screens) */
+/* Deep recessed track */
 @utility neu-well {
-  box-shadow:
-    inset 8px 8px 16px var(--neu-dark),
-    inset -8px -8px 16px var(--neu-light);
+  box-shadow: inset 0 0 0 1px var(--border);
 }
 
-/* Frosted glass panel — sheets, modals, nav dock */
+/* Frosted glass — floating dock, sheets, overlays only (blur 20, pulse §4) */
 @utility glass-panel {
   background: var(--glass-bg);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
 }
 
-/* Brand gradient text (violet → indigo) */
+/* Full Pulse card recipe (GlassCard → Panel) */
+@utility panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
+}
+
+/* Signature micro-label — 11px uppercase tracked (pulse §3) */
+@utility micro-label {
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Aurora glow backdrop for hero blocks (decorative; aria-hidden users) */
+@utility aurora {
+  background-image: var(--aurora);
+}
+
+/* Brand gradient text (periwinkle→violet; hues ride the token vars) */
 @utility text-gradient-brand {
   background-image: linear-gradient(135deg, var(--brand), var(--brand-to));
   -webkit-background-clip: text;
@@ -158,12 +217,39 @@ body {
   color: transparent;
 }
 
-/* Brand gradient surface */
+/* Brand gradient surface — primary buttons + FAB orb only */
 @utility bg-gradient-brand {
   background-image: linear-gradient(135deg, var(--brand), var(--brand-to));
 }
 
+/* Shimmer sweep block for skeletons (pulse §5; reduced-motion = static) */
+@utility skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: color-mix(in srgb, var(--ink) 7%, transparent);
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--ink) 9%, transparent),
+      transparent
+    );
+    animation: shimmer-sweep 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes shimmer-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /* Hairline divider that works on both themes */
 @utility hairline-t {
-  border-top: 1px solid var(--glass-border);
+  border-top: 1px solid var(--border);
 }

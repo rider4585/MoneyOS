@@ -1,3 +1,4 @@
+import { ArrowDownRight, ArrowUpRight } from 'lucide-react'
 import CountUp from './CountUp.jsx'
 
 function formatNumber(n) {
@@ -10,6 +11,7 @@ export default function Amount({
   signed = false,
   colored = true,
   animate = true,
+  showArrow = false,
   prefix = '₹',
   className = '',
 }) {
@@ -18,19 +20,20 @@ export default function Amount({
   const sign = signed ? (rupees > 0 ? '+' : rupees < 0 ? '-' : '') : ''
   const tone = !colored ? '' : rupees > 0 ? 'text-income' : rupees < 0 ? 'text-expense' : ''
 
-  if (!animate) {
-    return (
-      <span className={`tabular-nums font-semibold ${tone} ${className}`}>
-        {`${sign}${prefix}${formatNumber(magnitude)}`}
-      </span>
-    )
-  }
+  /* Directional glyph beside the figure (pulse §6); opt-in, default off */
+  const Arrow =
+    showArrow && colored ? (rupees > 0 ? ArrowUpRight : rupees < 0 ? ArrowDownRight : null) : null
+
+  const figure = animate ? (
+    <CountUp value={magnitude} format={(n) => `${sign}${prefix}${formatNumber(n)}`} />
+  ) : (
+    <span>{`${sign}${prefix}${formatNumber(magnitude)}`}</span>
+  )
 
   return (
-    <CountUp
-      value={magnitude}
-      format={(n) => `${sign}${prefix}${formatNumber(n)}`}
-      className={`${tone} font-semibold ${className}`}
-    />
+    <span className={`inline-flex items-baseline gap-0.5 tabular-nums font-semibold ${tone} ${className}`}>
+      {figure}
+      {Arrow ? <Arrow className="size-[1em] shrink-0" aria-hidden /> : null}
+    </span>
   )
 }

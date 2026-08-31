@@ -1,5 +1,10 @@
 import { useId } from 'react'
 
+/**
+ * NeuInput → Pulse filled Field (spec §4/§6): filled surface, borderless at
+ * rest, brand ring on focus. Label sits above the field (kept for API/DOM
+ * stability instead of a floating label).
+ */
 export default function NeuInput({
   label,
   icon: Icon,
@@ -13,10 +18,13 @@ export default function NeuInput({
 }) {
   const id = useId()
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined
+  const tone = error
+    ? 'border-expense/60 focus-visible:border-expense focus-visible:ring-expense/25'
+    : 'border-transparent focus-visible:border-brand focus-visible:ring-brand/25'
 
   return (
     <label htmlFor={id} className={`block ${className}`}>
-      {label ? <span className="mb-1 block text-sm font-medium text-muted">{label}</span> : null}
+      {label ? <span className="micro-label mb-1.5 block">{label}</span> : null}
       <span className="relative block">
         {Icon ? (
           <Icon
@@ -34,9 +42,7 @@ export default function NeuInput({
           id={id}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
-          className={`neu-inset w-full rounded-2xl bg-base px-4 py-3 text-sm text-ink outline-none placeholder:text-faint focus:ring-2 ${
-            error ? 'focus:ring-expense/60' : 'focus:ring-brand/50'
-          } ${Icon || prefix ? 'pl-10' : ''} ${suffix ? 'pr-11' : ''} ${inputClassName}`}
+          className={`w-full rounded-[14px] border bg-field px-4 py-3 text-sm text-ink outline-none transition-colors placeholder:text-faint focus-visible:ring-2 ${tone} ${Icon || prefix ? 'pl-10' : ''} ${suffix ? 'pr-11' : ''} ${inputClassName}`}
           {...rest}
         />
         {suffix ? (
