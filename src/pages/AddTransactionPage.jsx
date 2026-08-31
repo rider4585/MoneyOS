@@ -26,7 +26,7 @@ export default function AddTransactionPage() {
           type="button"
           onClick={() => navigate(-1)}
           aria-label="Cancel"
-          className="neu-card grid h-10 w-10 place-items-center rounded-full bg-surface text-muted transition-colors hover:text-ink"
+          className="grid h-10 w-10 place-items-center rounded-full border border-border bg-surface text-muted transition-colors hover:border-border-strong hover:text-ink"
         >
           <X size={18} strokeWidth={1.9} />
         </button>

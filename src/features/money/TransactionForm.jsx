@@ -195,7 +195,7 @@ export default function TransactionForm({ prefill = null, onSaved, onClose, vari
   const amountBlock = (
     <>
       <span
-        className={`neu-inset flex items-center gap-2 rounded-2xl bg-base focus-within:ring-2 focus-within:ring-brand/50 ${
+        className={`flex items-center gap-2 rounded-[14px] border border-transparent bg-field focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/25 ${
           full ? 'px-5 py-5' : 'px-4 py-3'
         }`}
       >
@@ -218,7 +218,7 @@ export default function TransactionForm({ prefill = null, onSaved, onClose, vari
           value={currency}
           onChange={(e) => setCurrency(e.target.value)}
           aria-label="Currency"
-          className="neu-raised-sm shrink-0 cursor-pointer rounded-xl bg-surface px-2 py-1.5 text-xs font-bold outline-none"
+          className="shrink-0 cursor-pointer rounded-xl border border-border bg-surface px-2 py-1.5 text-xs font-bold outline-none"
         >
           {ENTRY_CURRENCIES.map((c) => (
             <option key={c} value={c}>
@@ -235,7 +235,7 @@ export default function TransactionForm({ prefill = null, onSaved, onClose, vari
               key={value}
               type="button"
               onClick={() => applyQuickAmount(value)}
-              className="neu-raised-sm rounded-full bg-surface px-3.5 py-1.5 text-sm font-semibold tabular-nums transition-transform active:scale-[0.96]"
+              className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-sm font-semibold tabular-nums transition-transform active:scale-[0.96]"
             >
               +{value}
             </button>
