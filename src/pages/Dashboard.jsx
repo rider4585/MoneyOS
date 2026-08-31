@@ -10,10 +10,10 @@ import {
   CloudOff,
   ReceiptText,
   RefreshCw,
-  Repeat,
   Wallet,
 } from 'lucide-react'
 import repository from '../data/index.js'
+import { useDataChanged } from '../data/useDataChanged.js'
 import { monthStart } from '../lib/money.js'
 import { Amount, Button, EmptyState, GlassCard, ProgressBar, SkeletonLoader, StatTile } from '../components/ui/index.js'
 import PageHeader from '../features/plan/PageHeader.jsx'
@@ -44,6 +44,12 @@ export default function Dashboard() {
 
   const month = monthStart()
 
+  const [rev, setRev] = useState(0)
+  useDataChanged(
+    ['transactions', 'budgets', 'emis', 'categories'],
+    () => setRev((r) => r + 1)
+  )
+
   useEffect(() => {
     let alive = true
     Promise.all([
@@ -69,7 +75,7 @@ export default function Dashboard() {
     return () => {
       alive = false
     }
-  }, [month, attempt])
+  }, [month, attempt, rev])
 
   const income = useMemo(() => sumType(monthTxns, 'income'), [monthTxns])
   const expense = useMemo(() => sumType(monthTxns, 'expense'), [monthTxns])
@@ -130,9 +136,8 @@ export default function Dashboard() {
   )
 
   const quickLinks = [
-    { to: '/emi', label: 'EMI', icon: CalendarClock, hint: upcomingEmis.length ? `${upcomingEmis.length} due soon` : 'All caught up' },
+    { to: '/commitments', label: 'Commitments', icon: CalendarClock, hint: upcomingEmis.length ? `${upcomingEmis.length} due soon` : 'EMIs & recurring' },
     { to: '/budgets', label: 'Budgets', icon: ChartPie, hint: budgets.length ? `${budgets.length} active` : 'Set your first' },
-    { to: '/recurring', label: 'Recurring', icon: Repeat, hint: 'Rules & auto-posts' },
   ]
 
   if (loadError) {
@@ -279,7 +284,7 @@ export default function Dashboard() {
       <motion.section variants={rise} className="neu-card mt-4 rounded-3xl bg-surface p-5">
         <div className="mb-3 flex items-baseline justify-between gap-2">
           <h2 className="font-display text-base font-bold">EMIs · next 30 days</h2>
-          <Link to="/emi" className="inline-flex items-center gap-1 text-xs font-semibold text-brand">
+          <Link to="/commitments" className="inline-flex items-center gap-1 text-xs font-semibold text-brand">
             Tracker <ArrowRight size={12} aria-hidden />
           </Link>
         </div>

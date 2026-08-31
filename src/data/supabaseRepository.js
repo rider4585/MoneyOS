@@ -13,12 +13,26 @@ function client() {
   return getSupabase()
 }
 
+// Memoized user id: auth.getUser() is a NETWORK round-trip, and calling it on
+// EVERY repository call was ~2x requests per screen. The session id is stable
+// for the life of a session (the app fully reloads on sign-in/out via
+// AuthProvider/ProtectedRoute), so we resolve once and reuse. Only a SUCCESSFUL
+// resolve is cached; transient failures are re-attempted next call. __resetUserId
+// exists so an auth change (sign-out) can clear it when the app re-boots without
+// a hard reload.
+let cachedUserId = null
+export function __resetUserId() {
+  cachedUserId = null
+}
+
 async function currentUserId() {
+  if (cachedUserId) return cachedUserId
   const sb = client()
   const { data, error } = await sb.auth.getUser()
   if (error) throw error
   if (!data?.user?.id) throw new Error('supabaseRepository: no authenticated user')
-  return data.user.id
+  cachedUserId = data.user.id
+  return cachedUserId
 }
 
 /** Entry-time money snapshot for a new row (fx fetched only when non-INR). */
@@ -77,23 +91,23 @@ export function createSupabaseRepository() {
     },
 
     async updateTransaction(id, patch) {
-      const { data: row, error: fetchErr } = await client()
-        .from('transactions')
-        .select('*')
-        .eq('id', id)
-        .single()
-      if (fetchErr) throw fetchErr
-
-      const updates = { ...row, ...patch }
+      // Applied WITHOUT a pre-read: the edit sheet sends the full row as the
+      // patch (amount + currency + fx snapshot together), so rebuilding money
+      // fields straight from the patch is exact and costs zero extra queries.
+      // Currency defaults to INR for the snapshot only when the caller omits it
+      // and only when money fields are being touched (a non-money patch simply
+      // forwards the given columns unchanged).
+      const updates = { ...patch }
       if ('amount_minor' in patch || 'currency' in patch || 'fx_rate_to_inr' in patch) {
-        const explicit = Number(patch.fx_rate_to_inr)
+        const currency = updates.currency ?? INR
+        const explicit = Number(updates.fx_rate_to_inr)
         const rate =
-          updates.currency === INR
+          currency === INR
             ? 1
             : Number.isFinite(explicit) && explicit > 0
               ? explicit
-              : await fetchFxRateToInr(updates.currency)
-        Object.assign(updates, snapshotAmount(updates.amount_minor, updates.currency ?? INR, rate))
+              : await fetchFxRateToInr(currency)
+        Object.assign(updates, snapshotAmount(updates.amount_minor ?? 0, currency, rate))
       }
       delete updates.id
       delete updates.created_at
@@ -326,24 +340,20 @@ export function createSupabaseRepository() {
 
     async updateRecurring(id, patch) {
       const uid = await currentUserId()
-      const { data: row, error: fetchErr } = await client()
-        .from('recurring_transactions')
-        .select('*')
-        .eq('id', id)
-        .eq('user_id', uid)
-        .single()
-      if (fetchErr) throw fetchErr
-
-      const updates = { ...row, ...patch }
+      // Applied WITHOUT a pre-read for the same reason as updateTransaction: the
+      // caller supplies the full row / money fields together, so rebuilding the
+      // snapshot straight from the patch is exact and costs zero extra queries.
+      const updates = { ...patch }
       if ('amount_minor' in patch || 'currency' in patch || 'fx_rate_to_inr' in patch) {
-        const explicit = Number(patch.fx_rate_to_inr)
+        const currency = updates.currency ?? INR
+        const explicit = Number(updates.fx_rate_to_inr)
         const rate =
-          updates.currency === INR
+          currency === INR
             ? 1
             : Number.isFinite(explicit) && explicit > 0
               ? explicit
-              : await fetchFxRateToInr(updates.currency ?? INR)
-        Object.assign(updates, snapshotAmount(updates.amount_minor, updates.currency ?? INR, rate))
+              : await fetchFxRateToInr(currency)
+        Object.assign(updates, snapshotAmount(updates.amount_minor ?? 0, currency, rate))
       }
       delete updates.id
       delete updates.created_at

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, CalendarClock, HandCoins, Plus } from 'lucide-react'
 import repository from '../data/index.js'
+import { useDataChanged } from '../data/useDataChanged.js'
 import { Amount, Button, EmptyState, SkeletonLoader } from '../components/ui/index.js'
 import LedgerEntrySheet from '../features/money/LedgerEntrySheet.jsx'
 import SettleSheet from '../features/money/SettleSheet.jsx'
@@ -55,6 +56,9 @@ export default function Ledger() {
   useEffect(() => {
     refresh()
   }, [refresh])
+
+  // Refresh instantly when a ledger entry changes from any screen/sheet.
+  useDataChanged(['ledger'], refresh)
 
   const people = useMemo(() => {
     const map = new Map()

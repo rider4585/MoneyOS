@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { CloudOff, Pause, Pencil, Play, Plus, RefreshCw, Repeat, Trash2, Zap } from 'lucide-react'
 import repository from '../data/index.js'
+import { useDataChanged } from '../data/useDataChanged.js'
 import { isoDate } from '../lib/money.js'
 import {
   Amount,
@@ -53,6 +54,7 @@ export default function Recurring() {
   const [loaded, setLoaded] = useState(false)
   const [loadError, setLoadError] = useState(false)
   const [attempt, setAttempt] = useState(0)
+  const [rev, setRev] = useState(0)
   const [rules, setRules] = useState([])
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
@@ -67,6 +69,10 @@ export default function Recurring() {
     setRules(await repository.listRecurring())
   }, [])
 
+  // Refresh instantly when a recurring rule (or a category it references)
+  // changes from any screen.
+  useDataChanged(['recurring', 'categories'], () => setRev((r) => r + 1))
+
   useEffect(() => {
     let alive = true
     reload()
@@ -79,7 +85,7 @@ export default function Recurring() {
     return () => {
       alive = false
     }
-  }, [reload, attempt])
+  }, [reload, attempt, rev])
 
   useEffect(() => {
     if (!confirmDeleteId) return undefined

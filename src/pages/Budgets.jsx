@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AlertTriangle, ChartPie, ChevronLeft, ChevronRight, CloudOff, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import repository from '../data/index.js'
+import { useDataChanged } from '../data/useDataChanged.js'
 import { formatInr, monthStart } from '../lib/money.js'
 import {
   BottomSheet,
@@ -31,6 +32,7 @@ export default function Budgets() {
   const [loaded, setLoaded] = useState(false)
   const [loadError, setLoadError] = useState(false)
   const [attempt, setAttempt] = useState(0)
+  const [rev, setRev] = useState(0)
   const [budgets, setBudgets] = useState([])
   const [monthTxns, setMonthTxns] = useState([])
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -50,6 +52,9 @@ export default function Budgets() {
     setMonthTxns(txns)
   }, [])
 
+  // Refresh instantly when a budget, transaction or category changes anywhere.
+  useDataChanged(['budgets', 'transactions', 'categories'], () => setRev((r) => r + 1))
+
   useEffect(() => {
     let alive = true
     setLoaded(false)
@@ -62,7 +67,7 @@ export default function Budgets() {
     return () => {
       alive = false
     }
-  }, [month, reload, attempt])
+  }, [month, reload, attempt, rev])
 
   useEffect(() => {
     if (!confirmDeleteId) return undefined

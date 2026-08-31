@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { CalendarClock, CheckCircle2, ChevronDown, Landmark, Plus } from 'lucide-react'
 import repository from '../data/index.js'
+import { useDataChanged } from '../data/useDataChanged.js'
 import { Amount, Button, EmptyState, ProgressRing, SkeletonLoader } from '../components/ui/index.js'
 import AddEmiSheet from '../features/money/AddEmiSheet.jsx'
 import { installmentCount, installmentsFor, rememberInstallment } from '../features/money/installments.js'
@@ -51,6 +52,10 @@ export default function Emi() {
   useEffect(() => {
     refresh()
   }, [refresh])
+
+  // Refresh instantly when a loan or installment changes from the FAB sheet
+  // or any other screen (data-changed bus emitted by the repo wrapper).
+  useDataChanged(['emis'], refresh)
 
   async function markPaid(emi) {
     if (payingId) return
