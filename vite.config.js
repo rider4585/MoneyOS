@@ -20,8 +20,11 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'portrait-primary',
-        background_color: '#E0E5EC',
-        theme_color: '#8B5CF6',
+        // Cohere with the Pulse dark-first identity (--base / --brand in
+        // src/index.css .dark) so the install splash and taskbar match the
+        // app's canonical dark theme instead of a stale light gray.
+        background_color: '#0A0D13',
+        theme_color: '#6C8CFF',
         icons: [
           { src: '/icons/pwa-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icons/pwa-512.png', sizes: '512x512', type: 'image/png' },

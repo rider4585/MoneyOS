@@ -22,6 +22,14 @@ export default function TxnRow({ txn, onClick }) {
     <Pressable
       as="div"
       role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={(event) => {
+        if (!onClick) return
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onClick?.(event)
+        }
+      }}
       onClick={onClick}
       className="neu-raised-sm flex w-full items-center gap-3 rounded-2xl bg-surface px-3.5 py-3"
     >

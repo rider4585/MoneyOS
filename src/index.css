@@ -140,6 +140,15 @@ body {
   background: color-mix(in srgb, var(--brand) 30%, transparent);
 }
 
+/* Keyboard focus — a consistent brand ring on every interactive element.
+   Matches the focus-visible:ring-* treatments already on Button; this is the
+   global fallback so bare <button>/<a> targets are also reachable by keyboard.
+   (prefers-reduced-motion sets outline to auto-sized below if needed.) */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
 /* Respect prefers-reduced-motion for plain CSS transitions/animations */
 @media (prefers-reduced-motion: reduce) {
   *,

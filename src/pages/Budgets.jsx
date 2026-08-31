@@ -129,6 +129,20 @@ export default function Budgets() {
     setSheetOpen(true)
   }
 
+  const removeBudget = async (row) => {
+    if (confirmDeleteId !== row.id) {
+      setConfirmDeleteId(row.id)
+      return
+    }
+    try {
+      await repository.deleteBudget(row.id)
+      await reload(month)
+    } catch (error) {
+      console.error('[budgets] delete failed', error)
+    }
+    setConfirmDeleteId(null)
+  }
+
   const saveBudget = async (event) => {
     event.preventDefault()
     const limitMinor = Math.round(Number(form.limitRupees) * 100)
@@ -234,21 +248,7 @@ export default function Budgets() {
                 const pct = row.limit_inr_minor ? Math.round((row.spent / row.limit_inr_minor) * 100) : 0
                 const over = row.spent > row.limit_inr_minor
                 const near = !over && row.alert_threshold_pct && pct >= row.alert_threshold_pct
-  const removeBudget = async (row) => {
-    if (confirmDeleteId !== row.id) {
-      setConfirmDeleteId(row.id)
-      return
-    }
-    try {
-      await repository.deleteBudget(row.id)
-      await reload(month)
-    } catch (error) {
-      console.error('[budgets] delete failed', error)
-    }
-    setConfirmDeleteId(null)
-  }
-
-  return (
+                return (
                   <li key={row.id} className="neu-card rounded-[20px] bg-surface p-5">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
