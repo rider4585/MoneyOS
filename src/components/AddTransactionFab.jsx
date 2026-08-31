@@ -2,8 +2,9 @@ import { Plus } from 'lucide-react'
 import Pressable from './ui/Pressable.jsx'
 
 /**
- * Add-transaction FAB — neumorphic raised circle floating above the tab dock.
- * Opens the placeholder glass sheet until the data layer lands (T2).
+ * Add-transaction FAB — Pulse gradient orb (pulse §6): 60px, brand gradient,
+ * glow shadow. Sits centred above the tab dock; opens the capture-first
+ * full-screen add route.
  */
 export default function AddTransactionFab({ onOpen }) {
   return (
@@ -11,9 +12,9 @@ export default function AddTransactionFab({ onOpen }) {
       type="button"
       onClick={onOpen}
       aria-label="Add transaction"
-      className="neu-card fixed bottom-7 left-1/2 z-50 grid h-16 w-16 -translate-x-1/2 place-items-center rounded-full bg-surface text-brand dark:text-violet-300"
+      className="bg-gradient-brand fixed bottom-7 left-1/2 z-50 grid h-14 w-14 -translate-x-1/2 place-items-center rounded-full text-white shadow-[0_12px_30px_-6px_var(--glow-brand)] transition-transform active:scale-[0.97]"
     >
-      <Plus size={30} strokeWidth={2.4} />
+      <Plus size={28} strokeWidth={2.4} />
     </Pressable>
   )
 }

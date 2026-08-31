@@ -17,14 +17,10 @@ export default function AppShell() {
 
   return (
     <div className="min-h-dvh bg-base text-ink">
-      {/* soft brand glow backdrop */}
+      {/* aurora hero backdrop — one per screen max (pulse §4) */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-x-0 top-0 h-72 opacity-25 dark:opacity-20"
-        style={{
-          background:
-            'radial-gradient(60% 100% at 50% 0%, var(--brand) 0%, transparent 70%)',
-        }}
+        className="aurora pointer-events-none fixed inset-x-0 top-0 h-72"
       />
 
       <AddTransactionProvider>
@@ -41,7 +37,7 @@ export default function AppShell() {
             <NavLink
               to="/settings"
               aria-label="Settings"
-              className="neu-card grid h-10 w-10 place-items-center rounded-full bg-surface text-muted transition-colors hover:text-ink"
+              className="grid h-10 w-10 place-items-center rounded-full border border-border bg-surface text-muted transition-colors hover:border-border-strong hover:text-ink"
             >
               <Settings size={18} strokeWidth={1.9} />
             </NavLink>
