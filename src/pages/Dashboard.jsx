@@ -15,7 +15,7 @@ import {
 import repository from '../data/index.js'
 import { useDataChanged } from '../data/useDataChanged.js'
 import { monthStart } from '../lib/money.js'
-import { Amount, Button, EmptyState, GlassCard, ProgressBar, SkeletonLoader, StatTile } from '../components/ui/index.js'
+import { Amount, Button, EmptyState, ProgressBar, SkeletonLoader, StatTile } from '../components/ui/index.js'
 import PageHeader from '../features/plan/PageHeader.jsx'
 import SpendChart from '../features/plan/SpendChart.jsx'
 import { addMonthsIso, countdownLabel, daysUntil, monthLabel } from '../features/plan/dates.js'
@@ -207,23 +207,38 @@ export default function Dashboard() {
       </motion.div>
 
       <motion.div variants={rise} className="mt-3">
-        <GlassCard className="flex items-center justify-between gap-4 p-5">
-          <div>
-            <p className="text-xs font-semibold tracking-wide text-muted uppercase">Net flow</p>
-            <p className="font-display mt-1 text-2xl font-bold">
-              <Amount value={net} minor signed={!netPositive} />
-            </p>
-            <p className="mt-1 text-xs text-faint">{netPositive ? 'Income ahead of spending' : 'Spending exceeds income'}</p>
+        <div className="panel relative overflow-hidden rounded-[24px] p-5">
+          <div aria-hidden className="aurora pointer-events-none absolute inset-0" />
+          <div className="relative flex items-center justify-between gap-4">
+            <div>
+              <p className="micro-label">Net flow</p>
+              <p className="font-display mt-1.5 text-[2rem] font-bold leading-none tracking-tight tabular-nums sm:text-[2.5rem]">
+                <Amount value={net} minor signed={!netPositive} />
+              </p>
+              <p className="mt-2 text-xs text-muted">{netPositive ? 'Income ahead of spending' : 'Spending exceeds income'}</p>
+            </div>
+            <span
+              aria-hidden
+              className={`relative grid h-13 w-13 place-items-center rounded-2xl border border-border bg-surface-raised ${
+                netPositive ? 'text-income' : 'text-expense'
+              }`}
+              style={{
+                boxShadow: `0 0 22px -4px color-mix(in srgb, ${
+                  netPositive ? 'var(--income)' : 'var(--expense)'
+                } 45%, transparent)`,
+              }}
+            >
+              <Wallet size={23} />
+            </span>
           </div>
-          <span className={`neu-inset grid h-12 w-12 place-items-center rounded-2xl bg-base ${netPositive ? 'text-income' : 'text-expense'}`}>
-            <Wallet size={22} aria-hidden />
-          </span>
-        </GlassCard>
+        </div>
       </motion.div>
 
-      <motion.section variants={rise} className="neu-card mt-4 rounded-3xl bg-surface p-5">
-        <div className="mb-2 flex items-baseline justify-between gap-2">
-          <h2 className="font-display text-base font-bold">Daily spend</h2>
+      <motion.section variants={rise} className="neu-card mt-4 rounded-[20px] bg-surface p-5">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="font-display inline-flex items-center gap-2 text-base font-bold tracking-tight">
+            <span aria-hidden className="bg-gradient-brand h-2 w-2 rounded-full opacity-80" /> Daily spend
+          </h2>
           <Link to="/expenses" className="inline-flex items-center gap-1 text-xs font-semibold text-brand">
             Expenses <ArrowRight size={12} aria-hidden />
           </Link>
@@ -235,9 +250,11 @@ export default function Dashboard() {
         )}
       </motion.section>
 
-      <motion.section variants={rise} className="neu-card mt-4 rounded-3xl bg-surface p-5">
-        <div className="mb-3 flex items-baseline justify-between gap-2">
-          <h2 className="font-display text-base font-bold">Budget watch</h2>
+      <motion.section variants={rise} className="neu-card mt-4 rounded-[20px] bg-surface p-5">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="font-display inline-flex items-center gap-2 text-base font-bold tracking-tight">
+            <span aria-hidden className="bg-gradient-brand h-2 w-2 rounded-full opacity-80" /> Budget watch
+          </h2>
           <Link to="/budgets" className="inline-flex items-center gap-1 text-xs font-semibold text-brand">
             All budgets <ArrowRight size={12} aria-hidden />
           </Link>
@@ -281,9 +298,11 @@ export default function Dashboard() {
         )}
       </motion.section>
 
-      <motion.section variants={rise} className="neu-card mt-4 rounded-3xl bg-surface p-5">
-        <div className="mb-3 flex items-baseline justify-between gap-2">
-          <h2 className="font-display text-base font-bold">EMIs · next 30 days</h2>
+      <motion.section variants={rise} className="neu-card mt-4 rounded-[20px] bg-surface p-5">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="font-display inline-flex items-center gap-2 text-base font-bold tracking-tight">
+            <span aria-hidden className="bg-gradient-brand h-2 w-2 rounded-full opacity-80" /> EMIs · next 30 days
+          </h2>
           <Link to="/commitments" className="inline-flex items-center gap-1 text-xs font-semibold text-brand">
             Tracker <ArrowRight size={12} aria-hidden />
           </Link>
@@ -310,21 +329,27 @@ export default function Dashboard() {
         )}
       </motion.section>
 
-      <motion.nav variants={rise} aria-label="Plan shortcuts" className="mt-4 grid grid-cols-3 gap-3">
+      <motion.nav variants={rise} aria-label="Plan shortcuts" className="mt-4 grid grid-cols-2 gap-3">
         {quickLinks.map((link) => (
           <Link key={link.to} to={link.to} className="group">
-            <div className="neu-raised-sm flex flex-col items-center gap-1.5 rounded-2xl bg-surface px-2 py-3.5 text-center transition-transform group-active:scale-[0.97]">
-              <link.icon size={20} className="text-brand" aria-hidden />
-              <span className="text-xs font-bold">{link.label}</span>
-              <span className="truncate text-[10px] text-faint">{link.hint}</span>
+            <div className="neu-raised-sm flex items-center gap-3 rounded-2xl bg-surface px-4 py-3 transition-transform group-active:scale-[0.97]">
+              <span aria-hidden className="bg-gradient-brand grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white" style={{ boxShadow: '0 0 18px -4px color-mix(in srgb, var(--brand) 50%, transparent)' }}>
+                <link.icon size={19} />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-bold">{link.label}</span>
+                <span className="block truncate text-xs text-faint">{link.hint}</span>
+              </span>
             </div>
           </Link>
         ))}
       </motion.nav>
 
-      <motion.section variants={rise} className="neu-card mt-4 mb-2 rounded-3xl bg-surface p-5">
-        <div className="mb-1 flex items-baseline justify-between gap-2">
-          <h2 className="font-display text-base font-bold">Recent activity</h2>
+      <motion.section variants={rise} className="neu-card mt-4 mb-2 rounded-[20px] bg-surface p-5">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="font-display inline-flex items-center gap-2 text-base font-bold tracking-tight">
+            <span aria-hidden className="bg-gradient-brand h-2 w-2 rounded-full opacity-80" /> Recent activity
+          </h2>
           <Link to="/expenses" className="inline-flex items-center gap-1 text-xs font-semibold text-brand">
             View all <ArrowRight size={12} aria-hidden />
           </Link>
@@ -337,8 +362,13 @@ export default function Dashboard() {
                 <li key={txn.id} className="flex items-center gap-3 py-2.5">
                   <span
                     aria-hidden
-                    className="neu-inset grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-base"
-                    style={{ color: category?.color ?? undefined }}
+                    className="border-border grid h-9 w-9 shrink-0 place-items-center rounded-xl border bg-surface-raised"
+                    style={{
+                      color: category?.color ?? undefined,
+                      boxShadow: category?.color
+                        ? `0 0 14px -3px color-mix(in srgb, ${category.color} 55%, transparent)`
+                        : undefined,
+                    }}
                   >
                     <ReceiptText size={15} />
                   </span>

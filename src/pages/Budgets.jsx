@@ -212,12 +212,12 @@ export default function Budgets() {
             <GlassCard className="p-5">
               <div className="flex items-end justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold tracking-wide text-muted uppercase">Total budgeted</p>
-                  <p className="font-display mt-1 text-xl font-bold tabular-nums">{formatInr(totalSpent)} </p>
-                  <p className="text-xs text-faint">of {formatInr(totalLimit)} planned</p>
+                  <p className="micro-label">Total budgeted</p>
+                  <p className="font-display mt-1.5 text-2xl font-bold tracking-tight tabular-nums">{formatInr(totalSpent)} </p>
+                  <p className="text-xs text-muted">of {formatInr(totalLimit)} planned</p>
                 </div>
                 <p
-                  className={`text-sm font-bold tabular-nums ${
+                  className={`font-display text-lg font-bold tracking-tight tabular-nums ${
                     totalSpent > totalLimit ? 'text-expense' : totalSpent >= (totalLimit * 0.8) ? 'text-emi' : 'text-income'
                   }`}
                 >
@@ -249,7 +249,7 @@ export default function Budgets() {
   }
 
   return (
-                  <li key={row.id} className="neu-card rounded-3xl bg-surface p-5">
+                  <li key={row.id} className="neu-card rounded-[20px] bg-surface p-5">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="inline-flex items-center gap-2 text-sm font-bold">
@@ -285,7 +285,7 @@ export default function Budgets() {
                     </div>
                     <ProgressBar value={row.spent} max={row.limit_inr_minor} size="sm" showPercent overLabel={`${Math.max(pct - 100, 1)}% over`} className="mt-3" />
                     {near ? (
-                      <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-transparent text-xs font-semibold text-emi">
+                      <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emi/10 px-2.5 py-1 text-xs font-bold text-emi">
                         <AlertTriangle size={12} aria-hidden /> Past your {row.alert_threshold_pct}% alert line
                       </p>
                     ) : null}

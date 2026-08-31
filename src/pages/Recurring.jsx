@@ -241,13 +241,16 @@ export default function Recurring() {
             const accent = category?.color ?? (rule.type === 'income' ? 'var(--income)' : 'var(--expense)')
             const busy = busyId === rule.id
             return (
-              <li key={rule.id} className={`neu-card rounded-3xl bg-surface p-5 ${paused ? 'opacity-60' : ''}`}>
+              <li key={rule.id} className={`neu-card rounded-[20px] bg-surface p-5 ${paused ? 'opacity-60' : ''}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-3">
                     <span
                       aria-hidden
-                      className="neu-inset grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-base"
-                      style={{ color: accent }}
+                      className="border-border grid h-10 w-10 shrink-0 place-items-center rounded-xl border bg-surface-raised"
+                      style={{
+                        color: accent,
+                        boxShadow: `0 0 16px -4px color-mix(in srgb, ${accent} 50%, transparent)`,
+                      }}
                     >
                       <Repeat size={17} />
                     </span>

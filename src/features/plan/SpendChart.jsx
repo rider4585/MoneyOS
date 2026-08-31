@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import {
-  Bar,
-  BarChart,
+  Area,
+  AreaChart,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
@@ -11,17 +11,23 @@ import {
 import { formatInr } from '../../lib/money.js'
 
 /**
- * SpendChart — spend-by-day bars for one month, styled to the design system.
- * Colors come straight from the CSS custom properties (--brand/--brand-to/
- * --faint/--ink), so the chart flips with light/dark automatically.
+ * SpendChart — Pulse daily spend curve (spec §6/§7): 2px brand gradient line
+ * with a soft area fill that fades to transparent, dotted faint gridlines and
+ * a dark-glass tooltip. All colors come from CSS custom properties so the
+ * chart flips with light/dark automatically.
  */
+const TICK_FONT = {
+  fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
+  fontWeight: 500,
+}
+
 export default function SpendChart({ data = [], monthShort = '', height = 180 }) {
-  const gradientId = `spend-bar-${useId().replace(/[^a-zA-Z0-9]/g, '')}`
+  const lineId = `spend-line-${useId().replace(/[^a-zA-Z0-9]/g, '')}`
+  const areaId = `spend-area-${useId().replace(/[^a-zA-Z0-9]/g, '')}`
 
   const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null
     const minor = payload[0]?.value ?? 0
-    if (!minor) return null
     return (
       <div className="glass-panel rounded-2xl px-3 py-2 text-xs">
         <p className="font-medium text-muted">{`${monthShort} ${label}`}</p>
@@ -34,36 +40,43 @@ export default function SpendChart({ data = [], monthShort = '', height = 180 })
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: 4 }} barCategoryGap="18%">
+      <AreaChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: 4 }}>
         <defs>
-          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={lineId} x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="var(--brand)" />
             <stop offset="100%" stopColor="var(--brand-to)" />
           </linearGradient>
+          <linearGradient id={areaId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--brand)" stopOpacity={0.24} />
+            <stop offset="100%" stopColor="var(--brand-to)" stopOpacity={0} />
+          </linearGradient>
         </defs>
-        <CartesianGrid vertical={false} stroke="var(--faint)" strokeOpacity={0.3} strokeDasharray="3 6" />
+        <CartesianGrid vertical={false} stroke="var(--faint)" strokeOpacity={0.22} strokeDasharray="3 6" />
         <XAxis
           dataKey="day"
           tickLine={false}
           axisLine={false}
-          tick={{ fill: 'var(--muted)', fontSize: 10 }}
+          tick={{ fill: 'var(--muted)', ...TICK_FONT }}
           tickMargin={6}
           minTickGap={18}
         />
         <YAxis hide domain={[0, 'auto']} />
         <Tooltip
           content={<ChartTip />}
-          cursor={{ fill: 'color-mix(in srgb, var(--brand) 10%, transparent)' }}
+          cursor={{ stroke: 'var(--faint)', strokeOpacity: 0.4, strokeWidth: 1 }}
         />
-        <Bar
+        <Area
+          type="monotone"
           dataKey="amount"
-          fill={`url(#${gradientId})`}
-          radius={[5, 5, 2, 2]}
-          maxBarSize={18}
+          stroke={`url(#${lineId})`}
+          strokeWidth={2}
+          fill={`url(#${areaId})`}
+          dot={false}
+          activeDot={{ r: 4, fill: 'var(--brand)', stroke: 'var(--base)', strokeWidth: 2 }}
           isAnimationActive
           animationDuration={700}
         />
-      </BarChart>
+      </AreaChart>
     </ResponsiveContainer>
   )
 }

@@ -27,9 +27,11 @@ const EMPTY_FORM = { name: '', kind: 'expense', color: PALETTE[7] }
 
 function SectionCard({ title, action, children, className = '' }) {
   return (
-    <section className={`neu-card rounded-3xl bg-surface p-5 ${className}`}>
+    <section className={`neu-card rounded-[20px] bg-surface p-5 ${className}`}>
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="font-display text-base font-bold">{title}</h2>
+        <h2 className="font-display inline-flex items-center gap-2 text-base font-bold tracking-tight">
+          <span aria-hidden className="bg-gradient-brand h-2 w-2 rounded-full opacity-80" /> {title}
+        </h2>
         {action}
       </div>
       {children}
@@ -111,7 +113,7 @@ export default function Settings() {
         <ul className="space-y-1">
           {grouped[kind].map((category) => (
             <li key={category.id} className="flex items-center gap-3 rounded-xl px-1 py-1.5">
-              <span aria-hidden className="neu-inset h-7 w-7 shrink-0 rounded-lg bg-base" style={{ color: category.color }}>
+              <span aria-hidden className="border-border grid h-7 w-7 shrink-0 place-items-center rounded-lg border bg-surface-raised" style={{ color: category.color }}>
                 <span className="grid h-full w-full place-items-center text-[10px] font-black">{category.name.slice(0, 1)}</span>
               </span>
               <span className="min-w-0 flex-1 truncate text-sm font-semibold">{category.name}</span>
@@ -163,7 +165,7 @@ export default function Settings() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold capitalize">{theme} theme</p>
-              <p className="text-xs text-muted">Neumorphic surfaces adapt automatically.</p>
+              <p className="text-xs text-muted">Pulse surfaces adapt automatically.</p>
             </div>
             <ThemeToggle />
           </div>
@@ -187,7 +189,7 @@ export default function Settings() {
       <motion.div variants={rise} className="mb-4">
         <SectionCard title="Currency & FX">
           <div className="flex gap-3">
-            <span aria-hidden className="neu-inset grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-base text-brand">
+            <span aria-hidden className="border-border grid h-10 w-10 shrink-0 place-items-center rounded-xl border bg-surface-raised text-brand" style={{ boxShadow: '0 0 16px -4px color-mix(in srgb, var(--brand) 45%, transparent)' }}>
               <Globe size={18} />
             </span>
             <div className="space-y-1.5 text-sm leading-relaxed text-muted">
