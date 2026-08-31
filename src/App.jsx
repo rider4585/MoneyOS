@@ -1,5 +1,5 @@
 import { AnimatePresence, MotionConfig } from 'framer-motion'
-import { Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import ThemeProvider from './theme/ThemeProvider.jsx'
 import AppShell from './components/AppShell.jsx'
@@ -9,9 +9,9 @@ import repository from './data/index.js'
 import Dashboard from './pages/Dashboard.jsx'
 import Expenses from './pages/Expenses.jsx'
 import Ledger from './pages/Ledger.jsx'
-import Emi from './pages/Emi.jsx'
+import Commitments from './pages/Commitments.jsx'
+import AddTransactionPage from './pages/AddTransactionPage.jsx'
 import Budgets from './pages/Budgets.jsx'
-import Recurring from './pages/Recurring.jsx'
 import Settings from './pages/Settings.jsx'
 import DesignSystem from './pages/DesignSystem.jsx'
 import Login from './pages/Login.jsx'
@@ -44,9 +44,15 @@ export default function App() {
                 <Route index element={<Dashboard />} />
                 <Route path="expenses" element={<Expenses />} />
                 <Route path="ledger" element={<Ledger />} />
-                <Route path="emi" element={<Emi />} />
+                {/* legacy routes — EMI + Recurring now live in the Commitments hub */}
+                <Route path="emi" element={<Navigate to="/commitments" replace />} />
+                <Route
+                  path="recurring"
+                  element={<Navigate to="/commitments?tab=recurring" replace />}
+                />
+                <Route path="commitments" element={<Commitments />} />
+                <Route path="add" element={<AddTransactionPage />} />
                 <Route path="budgets" element={<Budgets />} />
-                <Route path="recurring" element={<Recurring />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="design" element={<DesignSystem />} />
                 <Route path="*" element={<NotFound />} />
