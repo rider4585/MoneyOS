@@ -1,18 +1,16 @@
 import { motion } from 'framer-motion'
 import { Settings } from 'lucide-react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import BottomNavDock from './BottomNavDock.jsx'
 import AddTransactionFab from './AddTransactionFab.jsx'
 import DemoBanner from './DemoBanner.jsx'
-import {
-  AddTransactionProvider,
-  useAddTransaction,
-} from '../features/money/AddTransactionProvider.jsx'
+import { AddTransactionProvider } from '../features/money/AddTransactionProvider.jsx'
 
 /**
  * AppShell — router outlet with staggered page transitions,
  * glass bottom tab dock and the neumorphic add-transaction FAB.
- * The FAB opens the shared add/edit-transaction sheet (features/money).
+ * The FAB opens the capture-first full-screen add route (/add);
+ * the dock/FAB are hidden on that route for a focused capture.
  */
 export default function AppShell() {
   const location = useLocation()
@@ -51,18 +49,22 @@ export default function AppShell() {
           <Outlet />
         </motion.main>
 
-        <FabAndDock />
+        <FabAndDock hide={location.pathname.startsWith('/add')} />
       </AddTransactionProvider>
     </div>
   )
 }
 
-function FabAndDock() {
-  const { openCreate } = useAddTransaction()
+function FabAndDock({ hide }) {
+  const navigate = useNavigate()
   return (
     <>
-      <AddTransactionFab onOpen={() => openCreate()} />
-      <BottomNavDock />
+      {!hide && (
+        <>
+          <AddTransactionFab onOpen={() => navigate('/add')} />
+          <BottomNavDock />
+        </>
+      )}
     </>
   )
 }

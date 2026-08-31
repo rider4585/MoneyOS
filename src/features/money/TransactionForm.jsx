@@ -1,0 +1,401 @@
+import { useEffect, useMemo, useState } from 'react'
+import { ArrowDownCircle, ArrowUpCircle, X } from 'lucide-react'
+import repository from '../../data/index.js'
+import { INR } from '../../lib/money.js'
+import { fetchFxRateToInr } from '../../lib/fx.js'
+import {
+  Button,
+  CategoryChip,
+  EmptyState,
+  NeuInput,
+  NeuSelect,
+  SegmentedControl,
+} from '../../components/ui/index.js'
+import { useCategories } from '../categories.js'
+import ConfirmSheet from './ConfirmSheet.jsx'
+
+export const ENTRY_CURRENCIES = [INR, 'USD', 'EUR', 'GBP', 'AED', 'SGD']
+
+const CURRENCY_SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£', AED: 'د.إ', SGD: 'S$' }
+
+const PAYMENT_METHODS = ['UPI', 'Cash', 'Card', 'NEFT', 'Bank transfer', 'Other']
+
+const TYPE_OPTIONS = [
+  { value: 'expense', label: 'Expense', icon: ArrowUpCircle },
+  { value: 'income', label: 'Income', icon: ArrowDownCircle },
+]
+
+// One-tap quick-amount shortcuts for the capture-first full-screen flow.
+const QUICK_AMOUNTS = [100, 200, 500, 1000, 2000, 5000]
+
+function todayIso() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function rupeesToMinor(text) {
+  const n = Number.parseFloat(text)
+  if (!Number.isFinite(n) || n <= 0) return null
+  return Math.round(n * 100)
+}
+
+/**
+ * TransactionForm — the single source of truth for creating/editing a
+ * transaction, shared by the global bottom sheet (variant="sheet") and the
+ * capture-first full-screen add page (variant="full"). Consumes ONLY the
+ * repository contract; fx states (loading/ready/failed+retry), category
+ * chips, date/note/method and edit+delete flows are identical in both.
+ */
+export default function TransactionForm({ prefill = null, onSaved, onClose, variant = 'sheet' }) {
+  const editing = Boolean(prefill)
+  const full = variant === 'full'
+
+  const [type, setType] = useState('expense')
+  const [amountText, setAmountText] = useState('')
+  const [currency, setCurrency] = useState(INR)
+  const [categoryId, setCategoryId] = useState(null)
+  const [date, setDate] = useState(todayIso())
+  const [note, setNote] = useState('')
+  const [method, setMethod] = useState('UPI')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [fxRate, setFxRate] = useState(null)
+  const [fxState, setFxState] = useState('idle')
+  const [fxAttempt, setFxAttempt] = useState(0)
+  const { categories } = useCategories()
+  const kindCats = useMemo(
+    () => categories.filter((c) => c.kind === (type === 'income' ? 'income' : 'expense')),
+    [categories, type]
+  )
+
+  // (Re)initialise the form whenever the target changes (mount or new prefill).
+  useEffect(() => {
+    setError(null)
+    setBusy(false)
+    setConfirmDelete(false)
+    if (prefill) {
+      setType(prefill.type ?? 'expense')
+      setAmountText(String(Math.abs(prefill.amount_minor ?? 0) / 100))
+      setCurrency(prefill.currency ?? INR)
+      setCategoryId(prefill.category_id ?? null)
+      setDate(prefill.note_date ?? todayIso())
+      setNote(prefill.description ?? '')
+      setMethod(prefill.payment_method ?? 'UPI')
+    } else {
+      setType('expense')
+      setAmountText('')
+      setCurrency(INR)
+      setCategoryId(null)
+      setDate(todayIso())
+      setNote('')
+      setMethod('UPI')
+    }
+  }, [prefill])
+
+  // Keep the selected category valid for the active type (heals after load too).
+  useEffect(() => {
+    if (!categoryId || kindCats.every((c) => c.id !== categoryId)) {
+      setCategoryId(kindCats[0]?.id ?? null)
+    }
+  }, [categoryId, kindCats]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Entry-time fx snapshot preview — fetched once per currency per session
+  // (sessionStorage-cached inside fx.js); the repository re-snapshots on save.
+  useEffect(() => {
+    if (currency === INR) {
+      setFxRate(null)
+      setFxState('idle')
+      return undefined
+    }
+    let alive = true
+    setFxState('loading')
+    fetchFxRateToInr(currency)
+      .then((rate) => {
+        if (!alive) return
+        setFxRate(rate)
+        setFxState('ready')
+      })
+      .catch(() => {
+        if (!alive) return
+        setFxRate(null)
+        setFxState('failed')
+      })
+    return () => {
+      alive = false
+    }
+  }, [currency, fxAttempt])
+
+  const kind = type === 'income' ? 'income' : 'expense'
+  const chips = kindCats
+  const inrPreview = useMemo(() => {
+    const minor = rupeesToMinor(amountText)
+    if (minor == null || !fxRate) return null
+    return Math.round(minor * fxRate) / 100
+  }, [amountText, fxRate])
+
+  function applyQuickAmount(value) {
+    setAmountText(String(value))
+  }
+
+  function handleType(next) {
+    setType(next)
+    setAmountText('')
+  }
+
+  async function handleSave() {
+    const minor = rupeesToMinor(amountText)
+    if (minor == null) {
+      setError('Enter an amount greater than zero')
+      return
+    }
+    setBusy(true)
+    setError(null)
+    const payload = {
+      type,
+      category_id: categoryId,
+      currency,
+      amount_minor: minor,
+      note_date: date || todayIso(),
+      description: note.trim(),
+      payment_method: method,
+    }
+    try {
+      const saved = editing
+        ? await repository.updateTransaction(prefill.id, payload)
+        : await repository.addTransaction(payload)
+      onSaved?.(saved, editing)
+      onClose?.()
+    } catch (err) {
+      setError(err?.message ?? 'Could not save transaction')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleDelete() {
+    setBusy(true)
+    try {
+      await repository.deleteTransaction(prefill.id)
+      setConfirmDelete(false)
+      onSaved?.(null, true)
+      onClose?.()
+    } catch (err) {
+      setError(err?.message ?? 'Could not delete transaction')
+      setConfirmDelete(false)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const typeToggle = (
+    <SegmentedControl options={TYPE_OPTIONS} value={type} onChange={handleType} />
+  )
+
+  const amountBlock = (
+    <>
+      <span
+        className={`neu-inset flex items-center gap-2 rounded-2xl bg-base focus-within:ring-2 focus-within:ring-brand/50 ${
+          full ? 'px-5 py-5' : 'px-4 py-3'
+        }`}
+      >
+        <span className={`font-display font-bold text-faint ${full ? 'text-4xl' : 'text-2xl'}`}>
+          {CURRENCY_SYMBOLS[currency] ?? currency}
+        </span>
+        <input
+          value={amountText}
+          onChange={(e) => setAmountText(e.target.value.replace(/[^0-9.]/g, ''))}
+          inputMode="decimal"
+          autoComplete="off"
+          placeholder="0"
+          autoFocus={full}
+          aria-label={`Amount in ${currency === INR ? 'rupees' : currency}`}
+          className={`font-display w-full min-w-0 bg-transparent font-bold tabular-nums outline-none placeholder:text-faint/60 ${
+            full ? 'text-center text-5xl' : 'text-2xl'
+          }`}
+        />
+        <select
+          value={currency}
+          onChange={(e) => setCurrency(e.target.value)}
+          aria-label="Currency"
+          className="neu-raised-sm shrink-0 cursor-pointer rounded-xl bg-surface px-2 py-1.5 text-xs font-bold outline-none"
+        >
+          {ENTRY_CURRENCIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </span>
+
+      {full && (
+        <div className="flex flex-wrap justify-center gap-2">
+          {QUICK_AMOUNTS.map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => applyQuickAmount(value)}
+              className="neu-raised-sm rounded-full bg-surface px-3.5 py-1.5 text-sm font-semibold tabular-nums transition-transform active:scale-[0.96]"
+            >
+              +{value}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {currency !== INR && (
+        <p className="-mt-2 flex flex-wrap items-center gap-x-2 text-xs text-muted">
+          {fxState === 'ready' ? (
+            <>
+              Snapshot at entry · 1 {currency} ≈ ₹{fxRate.toFixed(4)}
+              {inrPreview != null ? <> · this entry ≈ ₹{inrPreview.toLocaleString('en-IN')}</> : null}
+            </>
+          ) : fxState === 'failed' ? (
+            <>
+              <span className="font-semibold text-expense">Couldn&apos;t fetch live rate.</span>
+              <button
+                type="button"
+                onClick={() => setFxAttempt((n) => n + 1)}
+                className="font-bold underline underline-offset-2"
+              >
+                Retry
+              </button>
+              <span className="text-faint">(you can still save — rate snaps at save)</span>
+            </>
+          ) : (
+            <>Fetching live rate…</>
+          )}
+        </p>
+      )}
+    </>
+  )
+
+  return (
+    <>
+      <div className={full ? 'flex flex-col gap-5' : 'space-y-4'}>
+        {full ? (
+          <div className="flex flex-col gap-5 pt-2">
+            <div className="mx-auto w-full max-w-sm">{typeToggle}</div>
+            <div className="flex flex-col gap-3">{amountBlock}</div>
+
+            {chips.length > 0 ? (
+              <div className="-mx-1 flex gap-2 overflow-x-auto px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {chips.map((cat) => (
+                  <CategoryChip
+                    key={cat.id}
+                    label={cat.name}
+                    color={cat.color}
+                    active={categoryId === cat.id}
+                    onClick={() => setCategoryId(cat.id)}
+                    className="shrink-0"
+                  />
+                ))}
+              </div>
+            ) : null}
+
+            <div className="grid grid-cols-2 gap-3">
+              <NeuInput
+                label="Date"
+                type="date"
+                value={date}
+                max="2100-12-31"
+                onChange={(e) => setDate(e.target.value)}
+              />
+              <NeuSelect
+                label="Paid via"
+                value={method}
+                onChange={(e) => setMethod(e.target.value)}
+                options={PAYMENT_METHODS}
+              />
+            </div>
+
+            <NeuInput
+              label="Note"
+              placeholder="What was this for?"
+              maxLength={140}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </div>
+        ) : (
+          <>
+            {typeToggle}
+            {amountBlock}
+
+            {chips.length > 0 ? (
+              <div className="-mx-1 flex gap-2 overflow-x-auto px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {chips.map((cat) => (
+                  <CategoryChip
+                    key={cat.id}
+                    label={cat.name}
+                    color={cat.color}
+                    active={categoryId === cat.id}
+                    onClick={() => setCategoryId(cat.id)}
+                    className="shrink-0"
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState icon={ArrowDownCircle} title={`No ${kind} categories`} className="py-4" />
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              <NeuInput
+                label="Date"
+                type="date"
+                value={date}
+                max="2100-12-31"
+                onChange={(e) => setDate(e.target.value)}
+              />
+              <NeuSelect
+                label="Paid via"
+                value={method}
+                onChange={(e) => setMethod(e.target.value)}
+                options={PAYMENT_METHODS}
+              />
+            </div>
+
+            <NeuInput
+              label="Note"
+              placeholder="What was this for?"
+              maxLength={140}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </>
+        )}
+
+        {error ? (
+          <p role="alert" className="text-xs font-semibold text-expense">
+            {error}
+          </p>
+        ) : null}
+
+        <div className={full ? 'flex gap-2.5 pt-1' : 'flex gap-2.5 pt-1'}>
+          {editing && (
+            <Button variant="raised" onClick={() => setConfirmDelete(true)} disabled={busy} className="shrink-0">
+              Delete
+            </Button>
+          )}
+          <Button variant="brand" size="lg" fullWidth onClick={handleSave} disabled={busy}>
+            {busy ? 'Saving…' : editing ? 'Save changes' : 'Add transaction'}
+          </Button>
+        </div>
+      </div>
+
+      <ConfirmSheet
+        open={confirmDelete}
+        title="Delete this transaction?"
+        message={
+          prefill
+            ? `“${prefill.description || 'Untitled'}” will be removed permanently.`
+            : 'This entry will be removed permanently.'
+        }
+        confirmLabel="Delete"
+        busy={busy}
+        onConfirm={handleDelete}
+        onClose={() => setConfirmDelete(false)}
+      />
+    </>
+  )
+}
