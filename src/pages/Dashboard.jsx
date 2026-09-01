@@ -236,7 +236,7 @@ export default function Dashboard() {
 
       <motion.section variants={rise} className="neu-card mt-4 rounded-[20px] bg-surface p-5">
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="font-display inline-flex items-center gap-2 text-base font-bold tracking-tight">
+          <h2 className="text-ink font-display inline-flex items-center gap-2 text-base font-bold tracking-tight">
             <span aria-hidden className="bg-gradient-brand h-2 w-2 rounded-full opacity-80" /> Daily spend
           </h2>
           <Link to="/expenses" className="inline-flex items-center gap-1 text-xs font-semibold text-brand">
@@ -252,7 +252,7 @@ export default function Dashboard() {
 
       <motion.section variants={rise} className="neu-card mt-4 rounded-[20px] bg-surface p-5">
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="font-display inline-flex items-center gap-2 text-base font-bold tracking-tight">
+          <h2 className="text-ink font-display inline-flex items-center gap-2 text-base font-bold tracking-tight">
             <span aria-hidden className="bg-gradient-brand h-2 w-2 rounded-full opacity-80" /> Budget watch
           </h2>
           <Link to="/budgets" className="inline-flex items-center gap-1 text-xs font-semibold text-brand">
@@ -300,7 +300,7 @@ export default function Dashboard() {
 
       <motion.section variants={rise} className="neu-card mt-4 rounded-[20px] bg-surface p-5">
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="font-display inline-flex items-center gap-2 text-base font-bold tracking-tight">
+          <h2 className="text-ink font-display inline-flex items-center gap-2 text-base font-bold tracking-tight">
             <span aria-hidden className="bg-gradient-brand h-2 w-2 rounded-full opacity-80" /> EMIs · next 30 days
           </h2>
           <Link to="/commitments" className="inline-flex items-center gap-1 text-xs font-semibold text-brand">
@@ -347,7 +347,7 @@ export default function Dashboard() {
 
       <motion.section variants={rise} className="neu-card mt-4 mb-2 rounded-[20px] bg-surface p-5">
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="font-display inline-flex items-center gap-2 text-base font-bold tracking-tight">
+          <h2 className="text-ink font-display inline-flex items-center gap-2 text-base font-bold tracking-tight">
             <span aria-hidden className="bg-gradient-brand h-2 w-2 rounded-full opacity-80" /> Recent activity
           </h2>
           <Link to="/expenses" className="inline-flex items-center gap-1 text-xs font-semibold text-brand">

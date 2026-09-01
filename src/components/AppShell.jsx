@@ -4,6 +4,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import BottomNavDock from './BottomNavDock.jsx'
 import AddTransactionFab from './AddTransactionFab.jsx'
 import DemoBanner from './DemoBanner.jsx'
+import { PwaInstallBanner } from '../pwa/index.js'
 import { AddTransactionProvider } from '../features/money/AddTransactionProvider.jsx'
 
 /**
@@ -33,6 +34,7 @@ export default function AppShell() {
           className="mx-auto w-full max-w-xl px-5 pt-6 pb-40 sm:max-w-2xl md:max-w-3xl"
         >
           <DemoBanner />
+          <PwaInstallBanner />
           <div className="flex justify-end">
             <NavLink
               to="/settings"

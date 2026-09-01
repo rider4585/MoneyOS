@@ -15,6 +15,7 @@ import PageHeader from '../features/plan/PageHeader.jsx'
 import { addCategory, deleteCategory, updateCategory, useCategories } from '../features/categories.js'
 import { useAuth } from '../context/AuthProvider.jsx'
 import { useTheme } from '../theme/ThemeProvider.jsx'
+import { usePwaInstall } from '../pwa/index.js'
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } }
 const rise = {
@@ -29,7 +30,7 @@ function SectionCard({ title, action, children, className = '' }) {
   return (
     <section className={`neu-card rounded-[20px] bg-surface p-5 ${className}`}>
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="font-display inline-flex items-center gap-2 text-base font-bold tracking-tight">
+        <h2 className="text-ink font-display inline-flex items-center gap-2 text-base font-bold tracking-tight">
           <span aria-hidden className="bg-gradient-brand h-2 w-2 rounded-full opacity-80" /> {title}
         </h2>
         {action}
@@ -43,6 +44,7 @@ export default function Settings() {
   const { user } = useAuth()
   const { theme } = useTheme()
   const { categories } = useCategories()
+  const { canInstall, installed, install } = usePwaInstall()
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
@@ -154,7 +156,7 @@ export default function Settings() {
           {(user?.name ?? user?.email ?? '?').slice(0, 1).toUpperCase()}
         </span>
         <div className="min-w-0">
-          <p className="font-display truncate text-base font-bold">{user?.name ?? 'MoneyOS user'}</p>
+          <p className="text-ink font-display truncate text-base font-bold">{user?.name ?? 'MoneyOS user'}</p>
           <p className="truncate text-sm text-muted">{user?.email}</p>
           <p className="mt-0.5 text-xs text-faint">Signed in via {user?.provider === 'demo' ? 'demo session' : user?.provider ?? 'google'}</p>
         </div>
@@ -168,6 +170,30 @@ export default function Settings() {
               <p className="text-xs text-muted">Pulse surfaces adapt automatically.</p>
             </div>
             <ThemeToggle />
+          </div>
+        </SectionCard>
+      </motion.div>
+
+      <motion.div variants={rise} className="mb-4">
+        <SectionCard title="App">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold">
+                {installed ? 'Installed as an app' : canInstall ? 'Install MoneyOS' : 'Add to your device'}
+              </p>
+              <p className="text-xs text-muted">
+                {installed
+                  ? 'Launching from your home screen.'
+                  : canInstall
+                    ? 'Install for a full-screen, offline-first experience.'
+                    : 'Use your browser’s “Add to Home Screen” option from the address bar.'}
+              </p>
+            </div>
+            {!installed && canInstall ? (
+              <Button variant="brand" size="sm" onClick={install}>
+                Install
+              </Button>
+            ) : null}
           </div>
         </SectionCard>
       </motion.div>

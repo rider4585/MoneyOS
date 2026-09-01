@@ -5,6 +5,7 @@ import ThemeProvider from './theme/ThemeProvider.jsx'
 import AppShell from './components/AppShell.jsx'
 import { AuthProvider } from './context/AuthProvider.jsx'
 import ProtectedRoute from './context/ProtectedRoute.jsx'
+import { PwaInstallProvider } from './pwa/index.js'
 import repository from './data/index.js'
 import Dashboard from './pages/Dashboard.jsx'
 import Expenses from './pages/Expenses.jsx'
@@ -28,37 +29,39 @@ export default function App() {
     <MotionConfig reducedMotion="user">
       <ThemeProvider>
         <AuthProvider>
-          <AnimatePresence mode="wait" initial={false}>
-            <Routes location={location} key={location.pathname}>
-              <Route
-                path="/login"
-                element={<Login />}
-              />
-              <Route
-                element={
-                  <ProtectedRoute>
-                    <AppShell />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<Dashboard />} />
-                <Route path="expenses" element={<Expenses />} />
-                <Route path="ledger" element={<Ledger />} />
-                {/* legacy routes — EMI + Recurring now live in the Commitments hub */}
-                <Route path="emi" element={<Navigate to="/commitments" replace />} />
+          <PwaInstallProvider>
+            <AnimatePresence mode="wait" initial={false}>
+              <Routes location={location} key={location.pathname}>
                 <Route
-                  path="recurring"
-                  element={<Navigate to="/commitments?tab=recurring" replace />}
+                  path="/login"
+                  element={<Login />}
                 />
-                <Route path="commitments" element={<Commitments />} />
-                <Route path="add" element={<AddTransactionPage />} />
-                <Route path="budgets" element={<Budgets />} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="design" element={<DesignSystem />} />
-                <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
-          </AnimatePresence>
+                <Route
+                  element={
+                    <ProtectedRoute>
+                      <AppShell />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<Dashboard />} />
+                  <Route path="expenses" element={<Expenses />} />
+                  <Route path="ledger" element={<Ledger />} />
+                  {/* legacy routes — EMI + Recurring now live in the Commitments hub */}
+                  <Route path="emi" element={<Navigate to="/commitments" replace />} />
+                  <Route
+                    path="recurring"
+                    element={<Navigate to="/commitments?tab=recurring" replace />}
+                  />
+                  <Route path="commitments" element={<Commitments />} />
+                  <Route path="add" element={<AddTransactionPage />} />
+                  <Route path="budgets" element={<Budgets />} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="design" element={<DesignSystem />} />
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+              </Routes>
+            </AnimatePresence>
+          </PwaInstallProvider>
         </AuthProvider>
       </ThemeProvider>
     </MotionConfig>
