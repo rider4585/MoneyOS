@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowDownCircle, ArrowUpCircle, X } from 'lucide-react'
 import repository from '../../data/index.js'
 import { INR } from '../../lib/money.js'
-import { fetchFxRateToInr } from '../../lib/fx.js'
+import { fetchFxRateToInr, refreshFxRates } from '../../lib/fx.js'
 import {
   Button,
   CategoryChip,
@@ -143,6 +143,25 @@ export default function TransactionForm({ prefill = null, onSaved, onClose, vari
     setAmountText('')
   }
 
+  // Latest live rates are fetched ONLY when the user opens the currency
+  // dropdown (per product requirement). Fires the fresh fetch (best-effort;
+  // offline falls back to the cached/persisted rate in the fx handler) and
+  // bumps fxAttempt so the preview re-snapshots against the freshest data.
+  // Throttled so a focus+mousedown pair on the same open doesn't double-fetch.
+  const lastDropRefreshRef = useRef(0)
+  async function handleCurrencyOpen() {
+    const now = Date.now()
+    if (now - lastDropRefreshRef.current < 60_000) return
+    lastDropRefreshRef.current = now
+    try {
+      await refreshFxRates()
+    } catch {
+      // offline / API down �?" existing cache + last-known-rate fallback stand in
+    } finally {
+      setFxAttempt((n) => n + 1)
+    }
+  }
+
   async function handleSave() {
     const minor = rupeesToMinor(amountText)
     if (minor == null) {
@@ -217,6 +236,8 @@ export default function TransactionForm({ prefill = null, onSaved, onClose, vari
         <select
           value={currency}
           onChange={(e) => setCurrency(e.target.value)}
+          onFocus={handleCurrencyOpen}
+          onMouseDown={handleCurrencyOpen}
           aria-label="Currency"
           className="shrink-0 cursor-pointer rounded-xl border border-border bg-surface px-2 py-1.5 text-xs font-bold outline-none"
         >

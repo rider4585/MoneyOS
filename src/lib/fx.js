@@ -28,6 +28,45 @@ function sessionCacheSet(currency, rate) {
   } catch { /* ignore */ }
 }
 
+// ---------------------------------------------------------------------------
+// Persistent last-known-rate store. Unlike the session cache (which is the
+// live-accuracy layer and refreshes each session), this is an OFFLINE fallback:
+// rates are written whenever they are fetched successfully and read when the
+// device is offline so a non-INR entry can still be converted (the "old cached
+// rates" the user asked for). Bounded to 30 days so it never converts with a
+// very stale rate when a net connection is available.
+// ---------------------------------------------------------------------------
+const LAST_KEY = 'moneyos.fx.last'
+const LAST_TTL_MS = 30 * 24 * 60 * 60 * 1000
+
+function lastKnownRead() {
+  try {
+    const raw = localStorage.getItem(LAST_KEY)
+    if (!raw) return {}
+    const { rates, at } = JSON.parse(raw)
+    if (Date.now() - at > LAST_TTL_MS) return {}
+    return rates && typeof rates === 'object' ? rates : {}
+  } catch {
+    return {}
+  }
+}
+
+function lastKnownWrite(rates) {
+  try {
+    localStorage.setItem(LAST_KEY, JSON.stringify({ rates, at: Date.now() }))
+  } catch { /* quota/private mode �?" best effort */ }
+}
+
+/** Synchronous INR<->foreign fallback rate from the persistent store. */
+export function getLastKnownRate(currency) {
+  if (!currency || currency === INR) return 1
+  const rates = lastKnownRead()
+  const usdToInr = rates.INR
+  const usdToCurrency = rates[currency]
+  if (!(usdToInr > 0) || !(usdToCurrency > 0)) return null
+  return Math.round((usdToInr / usdToCurrency) * 1e8) / 1e8
+}
+
 async function fetchUsdRates() {
   const res = await fetch(FX_ENDPOINT)
   if (!res.ok) throw new Error(`fx: ${FX_ENDPOINT} responded ${res.status}`)
@@ -36,6 +75,29 @@ async function fetchUsdRates() {
     throw new Error('fx: unexpected payload from open.er-api.com')
   }
   return json.rates
+}
+
+/** Drop all session-cached rates so the next fetch hits the live endpoint. */
+export function clearFxSessionCache() {
+  try {
+    for (const key of Object.keys(sessionStorage)) {
+      if (key.startsWith('moneyos.fx.')) sessionStorage.removeItem(key)
+    }
+  } catch {
+    /* storage unavailable (private mode) �?" ignore */
+  }
+  ratesPromise = null
+}
+
+/**
+ * Force a fresh fetch of the base USD table, resetting this session's cached
+ * rates so the next fetchFxRateToInr() calls hit the live endpoint. Used when
+ * the user opens the currency dropdown so they always see the LATEST rates.
+ * @returns {Promise<Record<string, number>>} the raw per-USD rate map
+ */
+export async function refreshFxRates() {
+  clearFxSessionCache()
+  return fetchUsdRates()
 }
 
 /**
@@ -48,13 +110,19 @@ export async function fetchFxRateToInr(currency) {
   const cached = sessionCacheGet(currency)
   if (cached) return cached
 
-  ratesPromise = ratesPromise || fetchUsdRates()
+  ratesPromise = ratesPromise || fetchUsdRates().catch((err) => {
+    ratesPromise = null // allow retry on next entry attempt
+    throw err
+  })
   let rates
   try {
     rates = await ratesPromise
-  } catch (err) {
-    ratesPromise = null // allow retry on next entry attempt
-    throw err
+  } catch {
+    // Network failure (offline) �?" fall back to the persistent last-known rate
+    // so a non-INR entry can still be converted instead of hard-failing.
+    const fallback = getLastKnownRate(currency)
+    if (fallback) return fallback
+    throw new Error(`fx: no rate for "${currency}" while offline`)
   }
   const usdToInr = rates.INR
   const usdToCurrency = rates[currency]
@@ -63,6 +131,7 @@ export async function fetchFxRateToInr(currency) {
   }
   const rate = Math.round((usdToInr / usdToCurrency) * 1e8) / 1e8
   sessionCacheSet(currency, rate)
+  lastKnownWrite(rates)
   return rate
 }
 

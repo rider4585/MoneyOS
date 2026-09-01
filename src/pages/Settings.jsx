@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Banknote, Check, Globe, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react'
-import { DEMO_MODE } from '../data/index.js'
+import { Banknote, Check, Cloud, CloudOff, Globe, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react'
+import { DEMO_MODE, repository } from '../data/index.js'
+import useSyncState from '../data/useSyncState.js'
 import {
   BottomSheet,
   Button,
@@ -46,6 +47,25 @@ export default function Settings() {
   const { categories } = useCategories()
   const { canInstall, installed, install } = usePwaInstall()
   const { state: updateState, checkForUpdates } = usePwaUpdate()
+  const sync = useSyncState()
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState(null)
+
+  async function handleSyncNow() {
+    setSyncing(true)
+    setSyncMsg(null)
+    try {
+      const res =
+        typeof repository.flushPending === 'function'
+          ? await repository.flushPending()
+          : { pushed: 0, remaining: 0 }
+      setSyncMsg(res.pushed > 0 ? `Synced ${res.pushed} entry${res.pushed === 1 ? '' : 's'}.` : 'All up to date.')
+    } catch {
+      setSyncMsg('Sync failed — try again when online.')
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
@@ -218,6 +238,37 @@ export default function Settings() {
               onClick={checkForUpdates}
             >
               {updateState === 'checking' ? 'Checking…' : 'Check for updates'}
+            </Button>
+          </div>
+
+          <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
+            <div>
+              <p className="text-sm font-semibold">
+                {sync.online ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Cloud className="size-4 text-brand" aria-hidden /> Online
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5">
+                    <CloudOff className="size-4 text-expense" aria-hidden /> Offline
+                  </span>
+                )}
+                {sync.pendingCount > 0 && ` · ${sync.pendingCount} pending`}
+              </p>
+              <p className="text-xs text-muted">
+                {sync.pendingCount > 0
+                  ? `Offline entries will sync automatically when you’re back online.`
+                  : syncMsg ?? `Every entry is saved to your account${!sync.online ? ' when online' : ''}.`}
+              </p>
+            </div>
+            <Button
+              variant="raised"
+              size="sm"
+              icon={RefreshCw}
+              disabled={syncing}
+              onClick={handleSyncNow}
+            >
+              {syncing ? 'Syncing…' : 'Sync now'}
             </Button>
           </div>
         </SectionCard>

@@ -1,6 +1,7 @@
 import { snapshotAmount, INR } from '../lib/money.js'
-import { fetchFxRateToInr } from '../lib/fx.js'
+import { fetchFxRateToInr, getLastKnownRate } from '../lib/fx.js'
 import { getSupabase } from '../lib/supabase.js'
+import * as offlineQueue from './offlineQueue.js'
 
 /**
  * supabaseRepository — Postgres/Supabase implementation of the repository
@@ -42,12 +43,121 @@ async function snap(amountMinor, currency) {
   return snapshotAmount(amountMinor, cur, rate)
 }
 
+/**
+ * Best-effort snapshot used for OFFLINE saves: prefers a live/cached rate, then
+ * the persistent last-known rate, then resolves to a null-INR pending row (the
+ * amount is still stored natively; INR conversion happens on sync). Never
+ * throws for network reasons so an offline entry is never lost.
+ */
+async function bestEffortSnap(amountMinor, currency) {
+  const cur = currency || INR
+  if (cur === INR) return snapshotAmount(amountMinor, cur, 1)
+  try {
+    return await snapshotAmount(amountMinor, cur, await fetchFxRateToInr(cur))
+  } catch {
+    const last = getLastKnownRate(cur)
+    if (last) return snapshotAmount(amountMinor, cur, last)
+    return {
+      amount_minor: amountMinor,
+      currency: cur,
+      fx_rate_to_inr: null,
+      inr_amount_minor: null,
+      pending_rate: true,
+    }
+  }
+}
+
+/** Shape a queued offline txn as a row the UI can render (pending badge). */
+function pendingRow(item) {
+  const p = item.payload
+  const m = p.__money
+  return {
+    id: item.id,
+    pending: true,
+    pending_id: item.id,
+    type: p.type ?? 'expense',
+    category_id: p.category_id ?? null,
+    currency: p.currency ?? INR,
+    amount_minor: m?.amount_minor ?? p.amount_minor ?? 0,
+    fx_rate_to_inr: m?.fx_rate_to_inr ?? null,
+    inr_amount_minor: m?.inr_amount_minor ?? null,
+    pending_rate: !(m?.fx_rate_to_inr > 0),
+    note_date: p.note_date,
+    description: p.description ?? '',
+    payment_method: p.payment_method ?? 'UPI',
+    created_at: item.at,
+  }
+}
+
+/** Insert a transaction row to Supabase (used by addTransaction + flush). */
+async function insertTxn(payload) {
+  const { data, error } = await client().from('transactions').insert(payload).select().single()
+  if (error) throw error
+  return data
+}
+
+/** True when the device currently reports offline. */
+function isOffline() {
+  return !offlineQueue.getOnline()
+}
+
+/** Queue a raw txn in the offline store and return a display row for it. */
+async function queueOffline(txn) {
+  const money = await bestEffortSnap(txn.amount_minor, txn.currency)
+  const item = {
+    id: `offline-${Date.now().toString(36)}`,
+    entity: 'transactions',
+    payload: { ...txn, __money: money },
+    at: new Date().toISOString(),
+  }
+  offlineQueue.enqueue({ entity: item.entity, payload: item.payload })
+  return pendingRow(item)
+}
+
 export function createSupabaseRepository() {
+  let syncing = false
+
+  /**
+   * Replay every queued offline transaction: fetch the latest FX rate, build
+   * the row payload and insert to Supabase. Dequeues on success; stops on the
+   * first failure so the rest stay safe. Exposed as a repo method so the
+   * Settings sync button and the reconnect watcher both trigger it.
+   */
+  async function flushPending() {
+    if (syncing) return { pushed: 0, remaining: offlineQueue.getPendingCount() }
+    syncing = true
+    try {
+      return await offlineQueue.flush(async (item) => {
+        const p = item.payload
+        const cur = p.currency || INR
+        const rate = cur === INR ? 1 : await fetchFxRateToInr(cur)
+        const money = snapshotAmount(p.amount_minor ?? 0, cur, rate)
+        await insertTxn({
+          user_id: await currentUserId(),
+          type: p.type ?? 'expense',
+          category_id: p.category_id ?? null,
+          ...money,
+          note_date: dateOnly(p.note_date),
+          description: p.description ?? '',
+          payment_method: p.payment_method ?? 'UPI',
+          source: 'offline-sync',
+          recurring_rule_id: p.recurring_rule_id ?? null,
+        })
+      })
+    } finally {
+      syncing = false
+    }
+  }
+
   return {
     async init() {
       // RLS + signup trigger handle profile/category provisioning server-side;
       // nothing to seed client-side.
       await currentUserId()
+      // Auto-flush any offline queue when connectivity returns.
+      offlineQueue.startConnectivityWatcher(() => {
+        flushPending().catch(() => {})
+      })
     },
 
     // ------------------------------------------------------------------ txns
@@ -68,11 +178,23 @@ export function createSupabaseRepository() {
       if (filter.q) q = q.ilike('description', `%${filter.q}%`)
       const { data, error } = await q
       if (error) throw error
-      return data ?? []
+      // Surface any offline-queued transactions at the top (most-recent-first)
+      // so the user sees entries they added while disconnected.
+      const pending = offlineQueue
+        .getPending()
+        .filter((item) => item.entity === 'transactions')
+        .map(pendingRow)
+      return [...pending, ...(data ?? [])]
     },
 
     async addTransaction(txn) {
       const uid = await currentUserId()
+      // If offline, persist the RAW payload to the queue (with a best-effort
+      // rate snapshot for display) and let it sync later with fresh rates.
+      // Never lose a user entry to a connectivity blip.
+      if (isOffline()) {
+        return queueOffline(txn)
+      }
       const money = await snap(txn.amount_minor, txn.currency)
       const payload = {
         user_id: uid,
@@ -85,8 +207,17 @@ export function createSupabaseRepository() {
         source: txn.source ?? 'manual',
         recurring_rule_id: txn.recurring_rule_id ?? null,
       }
-      const { data, error } = await client().from('transactions').insert(payload).select().single()
-      if (error) throw error
+      let data
+      try {
+        data = await insertTxn(payload)
+      } catch (err) {
+        // Network failure mid-flight (went offline during the request): queue
+        // instead of failing the save.
+        if (isOffline()) {
+          return queueOffline(txn)
+        }
+        throw err
+      }
       return data
     },
 
@@ -434,6 +565,14 @@ export function createSupabaseRepository() {
       if (error) throw error
       return data
     },
+
+    // ------------------------------------------------------------- offline sync
+    flushPending,
+    getSyncState: () => ({
+      online: offlineQueue.getOnline(),
+      pendingCount: offlineQueue.getPendingCount(),
+      pending: offlineQueue.getPending().filter((i) => i.entity === 'transactions'),
+    }),
   }
 }
 

@@ -35,9 +35,6 @@ export default function Login() {
         </button>
 
         {error && <p className="mt-4 text-xs font-medium text-expense">{error}</p>}
-        <p className="mt-6 text-[11px] leading-relaxed text-muted">
-          Your data is row-locked to your account. Amounts are shown in ₹ only.
-        </p>
       </motion.div>
     </div>
   )
