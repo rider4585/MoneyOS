@@ -31,7 +31,7 @@ export default function Amount({
 
   const format = (n) =>
     minor
-      ? `${sign}${formatMinorToDisplay(Math.round(n), displayCurrency)}`
+      ? `${sign}${formatMinorToDisplay(Math.round(n * 100), displayCurrency)}`
       : `${sign}${prefix}${formatNumber(n)}`
 
   const figure = animate ? <CountUp value={magnitude} format={format} /> : <span>{format(magnitude)}</span>
