@@ -3,7 +3,8 @@ import { motion } from 'framer-motion'
 import { AlertTriangle, ChartPie, ChevronLeft, ChevronRight, CloudOff, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import repository from '../data/index.js'
 import { useDataChanged } from '../data/useDataChanged.js'
-import { formatInr, monthStart } from '../lib/money.js'
+import { monthStart } from '../lib/money.js'
+import { formatMinorToDisplay, resolveDisplayCurrency } from '../lib/display.js'
 import {
   BottomSheet,
   Button,
@@ -227,8 +228,8 @@ export default function Budgets() {
               <div className="flex items-end justify-between gap-3">
                 <div>
                   <p className="micro-label">Total budgeted</p>
-                  <p className="font-display mt-1.5 text-2xl font-bold tracking-tight tabular-nums">{formatInr(totalSpent)} </p>
-                  <p className="text-xs text-muted">of {formatInr(totalLimit)} planned</p>
+                  <p className="font-display mt-1.5 text-2xl font-bold tracking-tight tabular-nums">{formatMinorToDisplay(totalSpent, resolveDisplayCurrency())} </p>
+                  <p className="text-xs text-muted">of {formatMinorToDisplay(totalLimit, resolveDisplayCurrency())} planned</p>
                 </div>
                 <p
                   className={`font-display text-lg font-bold tracking-tight tabular-nums ${
@@ -257,8 +258,8 @@ export default function Budgets() {
                           <span className="truncate">{row.name}</span>
                         </p>
                         <p className="mt-1 text-sm">
-                          <span className="font-semibold tabular-nums">{formatInr(row.spent)}</span>{' '}
-                          <span className="text-xs font-medium text-faint">of {formatInr(row.limit_inr_minor)}</span>
+                          <span className="font-semibold tabular-nums">{formatMinorToDisplay(row.spent, resolveDisplayCurrency())}</span>{' '}
+                          <span className="text-xs font-medium text-faint">of {formatMinorToDisplay(row.limit_inr_minor, resolveDisplayCurrency())}</span>
                         </p>
                       </div>
                       <div className="flex shrink-0 items-center gap-2">

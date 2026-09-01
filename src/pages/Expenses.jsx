@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, ReceiptText, SearchX } from 'lucide-react'
 import repository from '../data/index.js'
-import { formatInr } from '../lib/money.js'
+import { formatMinorToDisplay, resolveDisplayCurrency } from '../lib/display.js'
 import {
   Button,
   CategoryChip,
@@ -42,8 +42,8 @@ function monthLabel(monthKey) {
 }
 
 function formatRupees(minor) {
-  // compact ₹lakh/₹crore for big month totals (money.js), else full en-IN
-  return formatInr(minor, { compact: true })
+  // compact lakh/crore (or K/M) for big month totals, else full locale format
+  return formatMinorToDisplay(minor, resolveDisplayCurrency(), { compact: true })
 }
 
 export default function Expenses() {

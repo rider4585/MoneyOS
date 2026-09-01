@@ -17,6 +17,8 @@ import { addCategory, deleteCategory, updateCategory, useCategories } from '../f
 import { useAuth } from '../context/AuthProvider.jsx'
 import { useTheme } from '../theme/ThemeProvider.jsx'
 import { usePwaInstall, usePwaUpdate, APP_VERSION } from '../pwa/index.js'
+import { resolveDisplayCurrency, setDisplayCurrency, DISPLAY_CURRENCIES } from '../lib/display.js'
+import { fetchFxRateToInr } from '../lib/fx.js'
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } }
 const rise = {
@@ -50,6 +52,15 @@ export default function Settings() {
   const sync = useSyncState()
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState(null)
+  const [displayCurrency, setDisplayCur] = useState(() => resolveDisplayCurrency())
+
+  function changeDisplayCurrency(next) {
+    setDisplayCur(next)
+    setDisplayCurrency(next)
+    // Warm the persistent last-known rate so converted figures render instantly
+    // (fire-and-forget; display falls back to INR if it fails while offline).
+    fetchFxRateToInr(next).catch(() => {})
+  }
 
   async function handleSyncNow() {
     setSyncing(true)
@@ -290,16 +301,32 @@ export default function Settings() {
 
       <motion.div variants={rise} className="mb-4">
         <SectionCard title="Currency & FX">
-          <div className="flex gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold">Display currency</p>
+              <p className="text-xs text-muted">
+                Amounts are stored as INR paise — this only changes how they're shown.
+              </p>
+            </div>
+            <SegmentedControl
+              options={DISPLAY_CURRENCIES.map((code) => ({
+                value: code,
+                label: code === 'INR' ? 'INR (₹)' : 'USD ($)',
+              }))}
+              value={displayCurrency}
+              onChange={changeDisplayCurrency}
+            />
+          </div>
+          <div className="mt-4 flex gap-3 border-t border-border pt-4">
             <span aria-hidden className="border-border grid h-10 w-10 shrink-0 place-items-center rounded-xl border bg-surface-raised text-brand" style={{ boxShadow: '0 0 16px -4px color-mix(in srgb, var(--brand) 45%, transparent)' }}>
               <Globe size={18} />
             </span>
             <div className="space-y-1.5 text-sm leading-relaxed text-muted">
               <p>
-                Everything displays in <strong className="text-ink font-semibold">INR (₹)</strong>, stored as integer paise.
+                Everything displays in <strong className="text-ink font-semibold">{displayCurrency === 'USD' ? 'USD ($)' : 'INR (₹)'}</strong>, stored as integer paise.
               </p>
               <p>
-                A non-INR entry snapshots the exchange rate <em>once, at entry time</em> (open.er-api.com) and keeps it on the row — later rate moves never rewrite history.
+                A non-INR entry snapshots the exchange rate <em>once, at entry time</em> (open.er-api.com) and keeps it on the row — later rate moves never rewrite history. Display conversion uses the stored last-known rate.
               </p>
             </div>
           </div>

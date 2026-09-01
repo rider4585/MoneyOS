@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, CalendarClock, HandCoins, Plus } from 'lucide-react'
 import repository from '../data/index.js'
 import { useDataChanged } from '../data/useDataChanged.js'
+import { formatMinorToDisplay, resolveDisplayCurrency } from '../lib/display.js'
 import { Amount, Button, EmptyState, SkeletonLoader } from '../components/ui/index.js'
 import LedgerEntrySheet from '../features/money/LedgerEntrySheet.jsx'
 import SettleSheet from '../features/money/SettleSheet.jsx'
@@ -24,7 +25,7 @@ function initials(name) {
 }
 
 function fmtRupees(minor) {
-  return `₹${(minor / 100).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+  return formatMinorToDisplay(minor, resolveDisplayCurrency())
 }
 
 function dueMeta(dueDate) {
@@ -123,7 +124,7 @@ export default function Ledger() {
             </span>
           </div>
           <p className="font-display mt-2 text-xl font-bold tracking-tight tabular-nums text-expense sm:text-2xl">
-            ₹{(totals.iOwe / 100).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+            {fmtRupees(totals.iOwe)}
           </p>
         </div>
       </div>

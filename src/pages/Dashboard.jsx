@@ -15,6 +15,7 @@ import {
 import repository from '../data/index.js'
 import { useDataChanged } from '../data/useDataChanged.js'
 import { monthStart } from '../lib/money.js'
+import { resolveDisplayCurrency } from '../lib/display.js'
 import { Amount, Button, EmptyState, ProgressBar, SkeletonLoader, StatTile } from '../components/ui/index.js'
 import PageHeader from '../features/plan/PageHeader.jsx'
 import SpendChart from '../features/plan/SpendChart.jsx'
@@ -180,7 +181,7 @@ export default function Dashboard() {
 
   return (
     <motion.div variants={stagger} initial="hidden" animate="show">
-      <PageHeader title={`This month`} subtitle={`${monthLabel(month)} · all amounts in INR`} />
+      <PageHeader title={`This month`} subtitle={`${monthLabel(month)} · all amounts in ${resolveDisplayCurrency()}`} />
 
       <motion.div variants={rise} className="grid grid-cols-2 gap-3">
         <StatTile

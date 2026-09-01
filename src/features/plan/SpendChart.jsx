@@ -8,7 +8,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { formatInr } from '../../lib/money.js'
+import { formatMinorToDisplay, resolveDisplayCurrency } from '../../lib/display.js'
 
 /**
  * SpendChart — Pulse daily spend curve (spec §6/§7): 2px brand gradient line
@@ -32,7 +32,7 @@ export default function SpendChart({ data = [], monthShort = '', height = 180 })
       <div className="glass-panel rounded-2xl px-3 py-2 text-xs">
         <p className="font-medium text-muted">{`${monthShort} ${label}`}</p>
         <p className="font-display mt-0.5 text-sm font-bold tabular-nums">
-          {formatInr(minor)}
+          {formatMinorToDisplay(minor, resolveDisplayCurrency())}
         </p>
       </div>
     )
