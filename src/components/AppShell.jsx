@@ -6,6 +6,7 @@ import AddTransactionFab from './AddTransactionFab.jsx'
 import DemoBanner from './DemoBanner.jsx'
 import { PwaInstallBanner } from '../pwa/index.js'
 import { AddTransactionProvider } from '../features/money/AddTransactionProvider.jsx'
+import useReconnectRefresh from '../data/useReconnectRefresh.js'
 
 /**
  * AppShell — router outlet with staggered page transitions,
@@ -15,6 +16,7 @@ import { AddTransactionProvider } from '../features/money/AddTransactionProvider
  */
 export default function AppShell() {
   const location = useLocation()
+  useReconnectRefresh()
 
   return (
     <div className="min-h-dvh bg-base text-ink">

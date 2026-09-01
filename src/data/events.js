@@ -36,6 +36,17 @@ export const MUTATION_ENTITIES = {
   addCategory: ['categories', 'transactions', 'budgets', 'recurring'],
   updateCategory: ['categories'],
   deleteCategory: ['categories', 'transactions', 'budgets', 'recurring'],
+  // flushPending replays offline-queued transactions into Supabase, so SUCCESS
+  // (even an empty one: queue { pushed: 0 }) means transactions may have moved.
+  // It is also the reconnect-flush path (useReconnectRefresh triggers it on the
+  // browser going back online), so it lists every watched dataset: the moment
+  // connectivity returns the client should re-sync its view of the whole server
+  // state, not just transactions. Registering it here makes the wrapper treat
+  // it like any other mutation: bust the read-through cache and emit
+  // data-changed so ALL mounted data-changed screens (Dashboard, Expenses via
+  // the legacy event, Ledger, Budgets, Commitments/EMI/Recurring) refetch the
+  // freshly-synced rows as soon as the flush completes.
+  flushPending: ['transactions', 'ledger', 'emis', 'budgets', 'recurring', 'categories'],
 }
 
 /** Emit after a successful mutation of `method`. No-op for reads/unknown. */

@@ -121,7 +121,10 @@ export function createSupabaseRepository() {
    * Replay every queued offline transaction: fetch the latest FX rate, build
    * the row payload and insert to Supabase. Dequeues on success; stops on the
    * first failure so the rest stay safe. Exposed as a repo method so the
-   * Settings sync button and the reconnect watcher both trigger it.
+   * Settings sync button and the app-shell reconnect hook both trigger it.
+   * Registered in events.js MUTATION_ENTITIES so ANY successful wrapped call
+   * (Settings button, useReconnectRefresh) busts the read cache and emits
+   * data-changed — screens refresh with the freshly-synced rows.
    */
   async function flushPending() {
     if (syncing) return { pushed: 0, remaining: offlineQueue.getPendingCount() }
@@ -154,10 +157,14 @@ export function createSupabaseRepository() {
       // RLS + signup trigger handle profile/category provisioning server-side;
       // nothing to seed client-side.
       await currentUserId()
-      // Auto-flush any offline queue when connectivity returns.
-      offlineQueue.startConnectivityWatcher(() => {
-        flushPending().catch(() => {})
-      })
+      // Keep the online/offline connectivity state fresh (useSyncState reads
+      // it). The offline FLUSH happens through the wrapped repository instead:
+      // useReconnectRefresh (mounted in AppShell) calls flushPending on the
+      // browser 'online' event, so the flush runs through the wrapper — cache
+      // bust + data-changed emission — making mounted screens refetch right
+      // after the queued rows land in Supabase. Triggering the raw closure
+      // here too would race that path.
+      offlineQueue.startConnectivityWatcher()
     },
 
     // ------------------------------------------------------------------ txns
