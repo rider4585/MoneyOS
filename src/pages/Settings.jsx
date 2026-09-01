@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Banknote, Check, Globe, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Banknote, Check, Globe, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { DEMO_MODE } from '../data/index.js'
 import {
   BottomSheet,
@@ -15,7 +15,7 @@ import PageHeader from '../features/plan/PageHeader.jsx'
 import { addCategory, deleteCategory, updateCategory, useCategories } from '../features/categories.js'
 import { useAuth } from '../context/AuthProvider.jsx'
 import { useTheme } from '../theme/ThemeProvider.jsx'
-import { usePwaInstall } from '../pwa/index.js'
+import { usePwaInstall, usePwaUpdate, APP_VERSION } from '../pwa/index.js'
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } }
 const rise = {
@@ -45,6 +45,7 @@ export default function Settings() {
   const { theme } = useTheme()
   const { categories } = useCategories()
   const { canInstall, installed, install } = usePwaInstall()
+  const { state: updateState, checkForUpdates } = usePwaUpdate()
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
@@ -194,6 +195,30 @@ export default function Settings() {
                 Install
               </Button>
             ) : null}
+          </div>
+
+          <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
+            <div>
+              <p className="text-sm font-semibold">Version {APP_VERSION}</p>
+              <p className="text-xs text-muted">
+                {updateState === 'checking'
+                  ? 'Checking for updates…'
+                  : updateState === 'updated'
+                    ? 'Update found — reloading…'
+                    : updateState === 'upToDate'
+                      ? 'You’re on the latest version.'
+                      : 'If new features don’t appear, update manually below.'}
+              </p>
+            </div>
+            <Button
+              variant="raised"
+              size="sm"
+              icon={RefreshCw}
+              disabled={updateState === 'checking' || updateState === 'updated'}
+              onClick={checkForUpdates}
+            >
+              {updateState === 'checking' ? 'Checking…' : 'Check for updates'}
+            </Button>
           </div>
         </SectionCard>
       </motion.div>
