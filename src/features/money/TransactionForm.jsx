@@ -16,7 +16,23 @@ import ConfirmSheet from './ConfirmSheet.jsx'
 
 export const ENTRY_CURRENCIES = [INR, 'USD', 'EUR', 'GBP', 'AED', 'SGD']
 
+const LAST_CURRENCY_KEY = 'moneyos.last_currency'
+
 const CURRENCY_SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£', AED: 'د.إ', SGD: 'S$' }
+
+function readLastCurrency() {
+  try {
+    const stored = localStorage.getItem(LAST_CURRENCY_KEY)
+    if (stored && stored !== INR && ENTRY_CURRENCIES.includes(stored)) return stored
+  } catch { /* private-mode */ }
+  return null
+}
+
+function writeLastCurrency(currency) {
+  try {
+    if (currency && currency !== INR) localStorage.setItem(LAST_CURRENCY_KEY, currency)
+  } catch { /* private-mode */ }
+}
 
 const PAYMENT_METHODS = ['UPI', 'Cash', 'Card', 'NEFT', 'Bank transfer', 'Other']
 
@@ -52,7 +68,8 @@ export default function TransactionForm({ prefill = null, onSaved, onClose, vari
 
   const [type, setType] = useState('expense')
   const [amountText, setAmountText] = useState('')
-  const [currency, setCurrency] = useState(INR)
+  const [currency, setCurrency] = useState(() => (prefill ? prefill.currency ?? INR : readLastCurrency() ?? INR))
+  const [rateFlipped, setRateFlipped] = useState(false)
   const [categoryId, setCategoryId] = useState(null)
   const [date, setDate] = useState(todayIso())
   const [note, setNote] = useState('')
@@ -85,7 +102,7 @@ export default function TransactionForm({ prefill = null, onSaved, onClose, vari
     } else {
       setType('expense')
       setAmountText('')
-      setCurrency(INR)
+      setCurrency(readLastCurrency() ?? INR)
       setCategoryId(null)
       setDate(todayIso())
       setNote('')
@@ -141,6 +158,12 @@ export default function TransactionForm({ prefill = null, onSaved, onClose, vari
   function handleType(next) {
     setType(next)
     setAmountText('')
+  }
+
+  function handleCurrencyChange(next) {
+    setCurrency(next)
+    setRateFlipped(false)
+    if (next !== INR && next !== (prefill?.currency ?? null)) writeLastCurrency(next)
   }
 
   // Latest live rates are fetched ONLY when the user opens the currency
@@ -235,7 +258,7 @@ export default function TransactionForm({ prefill = null, onSaved, onClose, vari
         />
         <select
           value={currency}
-          onChange={(e) => setCurrency(e.target.value)}
+          onChange={(e) => handleCurrencyChange(e.target.value)}
           onFocus={handleCurrencyOpen}
           onMouseDown={handleCurrencyOpen}
           aria-label="Currency"
@@ -265,11 +288,27 @@ export default function TransactionForm({ prefill = null, onSaved, onClose, vari
       )}
 
       {currency !== INR && (
-        <p className="-mt-2 flex flex-wrap items-center gap-x-2 text-xs text-muted">
+        <p className="-mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
           {fxState === 'ready' ? (
             <>
-              Snapshot at entry · 1 {currency} ≈ ₹{fxRate.toFixed(4)}
-              {inrPreview != null ? <> · this entry ≈ ₹{inrPreview.toLocaleString('en-IN')}</> : null}
+              <span className="text-faint">Snapshot at entry</span>
+              <button
+                type="button"
+                onClick={() => setRateFlipped((f) => !f)}
+                aria-label="Toggle rate view"
+                className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-border bg-surface px-2 py-0.5 font-bold tabular-nums text-muted transition-transform active:scale-[0.96]"
+              >
+                {rateFlipped
+                  ? `1 ₹ ≈ ${(1 / fxRate).toFixed(6)} ${currency}`
+                  : `1 ${currency} ≈ ₹${fxRate.toFixed(4)}`}
+              </button>
+              <span className="text-faint">tap to flip</span>
+              {inrPreview != null ? (
+                <span>· this entry ≈ ₹{inrPreview.toLocaleString('en-IN')}</span>
+              ) : null}
+              <span className="w-full text-faint">
+                Rate is frozen at save &amp; never changes later — re-open the currency to refresh it.
+              </span>
             </>
           ) : fxState === 'failed' ? (
             <>
