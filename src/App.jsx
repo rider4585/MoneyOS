@@ -1,5 +1,5 @@
-import { AnimatePresence, MotionConfig } from 'framer-motion'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { MotionConfig } from 'framer-motion'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { useEffect } from 'react'
 import ThemeProvider from './theme/ThemeProvider.jsx'
 import AppShell from './components/AppShell.jsx'
@@ -19,8 +19,6 @@ import Login from './pages/Login.jsx'
 import NotFound from './pages/NotFound.jsx'
 
 export default function App() {
-  const location = useLocation()
-
   useEffect(() => {
     repository.init().catch((err) => console.error('[data-layer] init failed', err))
   }, [])
@@ -30,12 +28,11 @@ export default function App() {
       <ThemeProvider>
         <AuthProvider>
           <PwaInstallProvider>
-            <AnimatePresence mode="wait" initial={false}>
-              <Routes location={location} key={location.pathname}>
-                <Route
-                  path="/login"
-                  element={<Login />}
-                />
+            <Routes>
+              <Route
+                path="/login"
+                element={<Login />}
+              />
                 <Route
                   element={
                     <ProtectedRoute>
@@ -60,7 +57,6 @@ export default function App() {
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>
-            </AnimatePresence>
           </PwaInstallProvider>
         </AuthProvider>
       </ThemeProvider>
