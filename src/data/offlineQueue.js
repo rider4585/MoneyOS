@@ -87,12 +87,23 @@ export const state = {
 }
 
 /** Storage-friendly snapshot for React (reads via useSyncExternalStore). */
+let _prevSnapshot = null
 export function getSnapshot() {
-  return {
+  const next = {
     online: getOnline(),
     pendingCount: getPendingCount(),
     updatedAt: getUpdatedAt(),
   }
+  if (
+    _prevSnapshot &&
+    _prevSnapshot.online === next.online &&
+    _prevSnapshot.pendingCount === next.pendingCount &&
+    _prevSnapshot.updatedAt === next.updatedAt
+  ) {
+    return _prevSnapshot
+  }
+  _prevSnapshot = next
+  return next
 }
 
 export function getOnline() {
